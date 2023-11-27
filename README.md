@@ -4,7 +4,7 @@ A PHP CMS that syncs the documentation written to and from a git repository.
 
 The basic idea of this CMS is that the documentation written to it will be
 available both in the development repository as markdown files but then also
-be available for the general public.
+be available for the public.
 
 ## Tasks/Roadmap
 
@@ -12,12 +12,16 @@ First Basic Version
 
 - Synchronizer
   - Git
-    - [ ] Pulling changes
+    - [x] Cloning repository
+    - [x] Pulling changes
     - [ ] Pushing changes
     - [ ] Creating detailed commit messages
     - [ ] Webhook for updates
     - [ ] Uploading to specific branch
     - [ ] Serving from specific directory
+- Backend
+  - [ ] Compression of images
+  - [ ] Index of all docs
 - CMS
   - Roles
     - [ ] Role-based permission system
@@ -34,3 +38,7 @@ First Basic Version
   - Keybinds
     - [ ] Open search overlay
   - [ ] Mobile support
+- API
+  - Documentation
+    - [ ] Markdown
+    - [ ] Meta data

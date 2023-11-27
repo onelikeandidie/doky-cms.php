@@ -16,3 +16,8 @@ use Illuminate\Support\Facades\Route;
 Route::get('/', function () {
     return view('welcome');
 });
+
+Route::get('/sync', function (\App\Libraries\Sync\Sync $sync) {
+    dump($sync);
+    return 'Sync';
+});
