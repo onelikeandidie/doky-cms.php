@@ -30,7 +30,9 @@ First Basic Version
     - [ ] Co-authoring
   - Editor
     - [ ] Markdown editor
-    - [ ] YML meta
+    - Meta
+      - [x] Basic Key-Value pairs
+      - [ ] YAML 
 - Frontend
   - Search
     - [ ] Advanced search per word
