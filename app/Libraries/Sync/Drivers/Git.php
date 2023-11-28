@@ -3,11 +3,17 @@
 namespace App\Libraries\Sync\Drivers;
 
 use App\Libraries\Result\Result;
+use App\Libraries\Sync\Drivers\Exceptions\LastSyncUpdateFailedException;
+use App\Libraries\Sync\Drivers\Exceptions\NoChangesException;
+use App\Libraries\Sync\Exceptions\ConflictingChangesException;
+use App\Libraries\Sync\Exceptions\DriverNotInitializedException;
 use App\Libraries\Sync\ISyncDriver;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Process;
+use Illuminate\Support\Str;
+use Nette\Utils\Random;
 
 class Git implements ISyncDriver
 {
@@ -56,7 +62,7 @@ class Git implements ISyncDriver
     /**
      * Clones the repo into the specified path.
      */
-    public function init(): Result
+    public function init(array $options = []): Result
     {
         // Check if the repo is already cloned
         if (file_exists($this->sync_path)) {
@@ -77,6 +83,20 @@ class Git implements ISyncDriver
         }
         if ($result->isErr()) {
             return $result;
+        }
+        // Set up the repo to not gpg sign commits
+        $process = Process::path($this->sync_path)
+            ->command([
+                $this->bin,
+                'config',
+                'commit.gpgsign',
+                'false',
+            ])
+            ->run();
+        // Check if the process failed
+        if ($process->exitCode() !== 0) {
+            $err = $process->errorOutput();
+            return Result::err($err);
         }
         // Pull the repo
         return $this->download();
@@ -171,6 +191,12 @@ class Git implements ISyncDriver
         if (!$this->isInitialized()) {
             return Result::err('Sync driver not initialized');
         }
+        // Get the current commit hash of the repo
+        $current_hash = $this->getCurrentHash();
+        if ($current_hash->isErr()) {
+            return $current_hash;
+        }
+        $current_hash = $current_hash->getOk();
         // Pull the repo
         $process = Process::path($this->sync_path)
             ->command([
@@ -190,7 +216,58 @@ class Git implements ISyncDriver
         if ($touch->isErr()) {
             return $touch;
         }
-        return Result::ok();
+        // Get the new commit hash of the repo
+        $new_hash = $this->getCurrentHash();
+        if ($new_hash->isErr()) {
+            return $new_hash;
+        }
+        $new_hash = $new_hash->getOk();
+        // Check if the commit hashes are the same
+        if ($current_hash === $new_hash) {
+            // No files were changed
+            return Result::ok([]);
+        }
+        // Get the changed files
+        $process = Process::path($this->sync_path)
+            ->command([
+                $this->bin,
+                'diff',
+                '--name-only',
+                $current_hash,
+                $new_hash,
+            ])
+            ->run();
+        // Check if the process failed
+        if ($process->exitCode() !== 0) {
+            $err = $process->errorOutput();
+            return Result::err($err);
+        }
+        // Get the changed files
+        $changed_files = $process->output();
+        $changed_files = explode("\n", $changed_files);
+        // Remove any empty values
+        $changed_files = array_filter($changed_files);
+        return Result::ok($changed_files);
+    }
+
+    /**
+     * @return Result<string, string>
+     */
+    public function getCurrentHash(): Result
+    {
+        $process = Process::path($this->sync_path)
+            ->command([
+                $this->bin,
+                'rev-parse',
+                'HEAD',
+            ])
+            ->run();
+        // Check if the process failed
+        if ($process->exitCode() !== 0) {
+            $err = $process->errorOutput();
+            return Result::err($err);
+        }
+        return Result::ok(trim($process->output()));
     }
 
     public function lastSync(): Result
@@ -213,8 +290,214 @@ class Git implements ISyncDriver
         $now_timestamp = time();
         $touch = File::put($last_sync_file, $now_timestamp);
         if ($touch === false) {
-            return Result::err('Failed to create last sync file');
+            return Result::err(new LastSyncUpdateFailedException());
         }
         return Result::ok($now_timestamp);
+    }
+
+    public function upload(): Result
+    {
+        // Check if the repo is initialized
+        if (!$this->isInitialized()) {
+            return Result::err(new DriverNotInitializedException());
+        }
+        // So, upload is kind of a weird thing for git. We can't just push the changes
+        // because we don't want to overwrite any changes that were made to the repo.
+        // Instead, we branch off of the current branch, commit the changes, and then
+        // try to merge the changes back into the main branch. If there are any conflicts
+        // then we abort the merge and return an error.
+
+        // Get the current commit hash of the repo
+        $current_hash = $this->getCurrentHash();
+        if ($current_hash->isErr()) {
+            return $current_hash;
+        }
+        $current_hash = $current_hash->getOk();
+
+        // Check if there are any changes to the repo
+        $process = Process::path($this->sync_path)
+            ->command([
+                $this->bin,
+                'status',
+                '--porcelain',
+            ])
+            ->run();
+        // Check if the process failed
+        if ($process->exitCode() !== 0) {
+            $err = $process->errorOutput();
+            return Result::err($err);
+        }
+        // Get the output
+        $files_changed = $process->output();
+        // Check if there are any changes
+        if (empty(trim($files_changed))) {
+            // No changes
+            return Result::err(new NoChangesException());
+        }
+
+        // Create a new branch
+        $temp_sync_branch = 'sync-' . Random::generate(8);
+        $process = Process::path($this->sync_path)
+            ->command([
+                $this->bin,
+                'checkout',
+                '-b',
+                $temp_sync_branch,
+            ])
+            ->run();
+        // Check if the process failed
+        if ($process->exitCode() !== 0) {
+            $err = $process->errorOutput();
+            return Result::err($err);
+        }
+
+        // Get list of all files changed
+        // The output of this command looks like this:
+        // $ git status --porcelain
+        //  M index.md
+        // AM test.md
+        // ?? test2.md
+        $files_changed = collect(explode("\n", $files_changed))
+            ->map(function ($line) {
+                // Remove the first two characters
+                return trim(substr($line, 2));
+            })
+            ->filter(function ($line) {
+                // Remove any empty lines
+                return !empty($line);
+            })
+            ->filter(function ($line) {
+                // Remove any lines that are not markdown files
+                return Str::endsWith($line, '.md');
+            })
+            ->toArray();
+        // Add all files to the commit
+        $process = Process::path($this->sync_path)
+            ->command([
+                $this->bin,
+                'add',
+                ...$files_changed,
+            ])
+            ->run();
+        // Check if the process failed
+        if ($process->exitCode() !== 0) {
+            $err = $process->errorOutput();
+            return Result::err($err);
+        }
+
+        $message = 'Sync commit ' . date('Y-m-d H:i:s');
+        // Add each file to the commit to the message
+        foreach ($files_changed as $file) {
+            $message .= "\n\n" . $file;
+        }
+
+        // Commit the changes
+        $process = Process::path($this->sync_path)
+            ->command([
+                $this->bin,
+                'commit',
+                '-m',
+                $message
+            ])
+            ->run();
+        // Check if the process failed
+        if ($process->exitCode() !== 0) {
+            $err = $process->errorOutput();
+            // Check if the error is that there are no changes
+            if (str_contains($err, 'nothing to commit')) {
+                return Result::err(new NoChangesException());
+            }
+            return Result::err($err);
+        }
+
+        // Checkout to the main branch
+        $process = Process::path($this->sync_path)
+            ->command([
+                $this->bin,
+                'checkout',
+                $this->branch,
+            ])
+            ->run();
+        // Check if the process failed
+        if ($process->exitCode() !== 0) {
+            $err = $process->errorOutput();
+            return Result::err($err);
+        }
+
+        // Pull the latest changes
+        $process = Process::path($this->sync_path)
+            ->command([
+                $this->bin,
+                'pull',
+                'origin',
+                $this->branch,
+            ])
+            ->run();
+
+        // Merge the changes back into the main branch
+        $process = Process::path($this->sync_path)
+            ->command([
+                $this->bin,
+                'merge',
+                $temp_sync_branch,
+            ])
+            ->run();
+        // Check if the process failed
+        if ($process->exitCode() !== 0) {
+            // Check if the error is that there are no changes
+            $err = $process->errorOutput();
+            if (str_contains($err, 'Already up to date')) {
+                return Result::err(new NoChangesException());
+            }
+            // Check if the error is that there are merge conflicts
+            if (str_contains($err, 'Automatic merge failed')) {
+                return Result::err(new ConflictingChangesException());
+            }
+            return Result::err($err);
+        }
+
+        // Push the changes
+        $process = Process::path($this->sync_path)
+            ->command([
+                $this->bin,
+                'push',
+                'origin',
+                $this->branch,
+            ])
+            ->run();
+        // Check if the process failed
+        if ($process->exitCode() !== 0) {
+            // Check if the error is that there are no changes
+            $err = $process->errorOutput();
+            if (str_contains($err, 'Everything up-to-date')) {
+                return Result::err(new NoChangesException());
+            }
+            return Result::err($err);
+        }
+
+        // Delete the sync branch
+        $process = Process::path($this->sync_path)
+            ->command([
+                $this->bin,
+                'branch',
+                '-D',
+                $temp_sync_branch,
+            ])
+            ->run();
+        // Check if the process failed
+        if ($process->exitCode() !== 0) {
+            // Check if the error is that there are no changes
+            $err = $process->errorOutput();
+            if (str_contains($err, 'not found')) {
+                return Result::err(new NoChangesException());
+            }
+            return Result::err($err);
+        }
+        // Also update the last sync file
+        $touch = $this->updateLastSync();
+        if ($touch->isErr()) {
+            return $touch;
+        }
+        return Result::ok($files_changed);
     }
 }

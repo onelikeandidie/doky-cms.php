@@ -34,7 +34,7 @@ class Meta
         return new Meta(
             $data['title'],
             $data['authors'] ?? ['Unknown Author'],
-            $data['date'],
+            $data['date'] ?? '',
             $data['tags'] ?? [],
             $data
         );
