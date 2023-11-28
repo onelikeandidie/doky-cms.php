@@ -14,11 +14,11 @@ First Basic Version
   - Git
     - [x] Cloning repository
     - [x] Pulling changes
-    - [ ] Pushing changes
+    - [x] Pushing changes
     - [ ] Creating detailed commit messages
     - [ ] Webhook for updates
-    - [ ] Uploading to specific branch
-    - [ ] Serving from specific directory
+    - [x] Uploading to specific branch
+    - [x] Serving from specific directory
 - Backend
   - [ ] Compression of images
   - [ ] Index of all docs
