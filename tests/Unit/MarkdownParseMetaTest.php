@@ -63,10 +63,10 @@ EOT;
         $this->assertTrue($meta->isOk());
 
         $meta = $meta->getOk();
-        $this->assertEquals('Hello World', $meta->title);
-        $this->assertEquals(['John Doe', 'Jane Doe'], $meta->authors);
-        $this->assertEquals('2021-01-01', $meta->date);
-        $this->assertEquals(['hello', 'world'], $meta->tags);
+        $this->assertEquals('Hello World', $meta->get('title')->unwrap());
+        $this->assertEquals(['John Doe', 'Jane Doe'], $meta->get('authors')->unwrap());
+        $this->assertEquals('2021-01-01', $meta->get('date')->unwrap());
+        $this->assertEquals(['hello', 'world'], $meta->get('tags')->unwrap());
     }
 
     public function test_extract_meta_data_from_markdown_with_mixed_data()
@@ -87,11 +87,11 @@ EOT;
         $this->assertTrue($meta->isOk());
 
         $meta = $meta->getOk();
-        $this->assertEquals('Hello World', $meta->title);
-        $this->assertEquals(['John Doe', 'Jane Doe'], $meta->authors);
-        $this->assertEquals('2021-01-01', $meta->date);
+        $this->assertEquals('Hello World', $meta->get('title')->unwrap());
+        $this->assertEquals(['John Doe', 'Jane Doe'], $meta->get('authors')->unwrap());
+        $this->assertEquals('2021-01-01', $meta->get('date')->unwrap());
         $this->assertEquals('This is a description', $meta->get('description')->unwrap());
-        $this->assertEquals(['hello', 'world'], $meta->tags);
+        $this->assertEquals(['hello', 'world'], $meta->get('tags')->unwrap());
         $this->assertEquals(123, $meta->get('beans')->unwrap());
         // Check if getting an undefined key returns an error.
         $this->assertEquals(MetaKeyNotSet::class, get_class($meta->get('undefined')->getErr()));

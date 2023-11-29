@@ -2,6 +2,8 @@
 
 namespace App\Libraries\Result;
 
+use Exception;
+
 /**
  * This class is a port of Rust's Result type.
  *
@@ -80,11 +82,23 @@ class Result
     {
         if ($this->isErr()) {
             $error = $this->err;
+            // If the error is an exception, throw it
+            if ($error instanceof Exception) {
+                throw $error;
+            }
             if (!is_string($error)) {
-                $error = $error->toString();
+                $error = $error->getMessage() ?? $error->__toString();
             }
             throw new PanicException($error);
         }
         return $this->ok;
+    }
+
+    public function getOkOrDefault(mixed $default): mixed
+    {
+        if ($this->isOk()) {
+            return $this->ok;
+        }
+        return $default;
     }
 }

@@ -22,14 +22,15 @@ First Basic Version
 - Backend
   - [ ] Compression of images
   - [ ] Index of all docs
+  - [ ] Serialization of docs into markdown
 - CMS
   - Roles
-    - [ ] Role-based permission system
+    - [x] Role-based permission system
   - Users
     - [ ] Author name in doc
-    - [ ] Co-authoring
+    - [x] Co-authoring
   - Editor
-    - [ ] Markdown editor
+    - [x] Markdown editor
     - Meta
       - [x] Basic Key-Value pairs
       - [ ] YAML 

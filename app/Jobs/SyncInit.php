@@ -9,6 +9,7 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
+use Illuminate\Support\Facades\Log;
 
 class SyncInit implements ShouldQueue, ShouldBeUnique
 {
@@ -29,7 +30,7 @@ class SyncInit implements ShouldQueue, ShouldBeUnique
     {
         $result = $this->sync->getDriver()->init();
         $result = $result->unwrap();
-        dump($result);
+        Log::debug('Sync init result', ['result' => $result]);
     }
 
     /**

@@ -14,6 +14,9 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
+// TODO: Add the github webhook route
+// Route::post('webhooks/github', [\App\Http\Controllers\Webhooks\GithubController::class, 'handle']);
+
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
 });

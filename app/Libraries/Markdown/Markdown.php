@@ -5,13 +5,23 @@ namespace App\Libraries\Markdown;
 use App\Libraries\Markdown\Exceptions\EmptyMetaException;
 use App\Libraries\Markdown\Exceptions\NoMetaClosingTagException;
 use App\Libraries\Markdown\Exceptions\NoMetaStartTagException;
+use App\Libraries\Markdown\Extensions\HelpContentExtension;
 use App\Libraries\Result\Result;
 use Illuminate\Support\Str;
+use League\CommonMark\CommonMarkConverter;
+use League\CommonMark\Environment\Environment;
+use League\CommonMark\Extension\CommonMark\CommonMarkCoreExtension;
+use League\CommonMark\MarkdownConverter;
 
 class Markdown
 {
     public string $content;
     public ?Meta $meta;
+
+    public function __construct(string $content)
+    {
+        $this->content = $content;
+    }
 
     public function meta(): Meta
     {
@@ -80,6 +90,25 @@ class Markdown
             $meta[$key] = $value;
         }
         // Return the meta data.
-        return Result::ok(Meta::fromArray($meta));
+        return Result::ok(new Meta($meta));
+    }
+
+    public function toHtml(): string
+    {
+        // Convert the content in the block's data to HTML using CommonMark
+        $enviroment = new Environment();
+        $enviroment->addExtension(new HelpContentExtension());
+        $enviroment->addExtension(new CommonMarkCoreExtension());
+        $converter = new MarkdownConverter($enviroment);
+        $content = $this->content;
+        // Remove the metadata from the content.
+        if (Str::contains($content, '---')) {
+            $content = Str::after($content, '---');
+            $content = Str::after($content, '---');
+            $content = trim($content);
+        }
+        return $converter->convert(
+            $content
+        );
     }
 }
