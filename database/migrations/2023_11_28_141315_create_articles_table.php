@@ -16,7 +16,6 @@ return new class extends Migration
             $table->string('slug')->unique();
             $table->longText('content');
             $table->json('metadata');
-            $table->foreignId('author_id')->nullable()->constrained('users')->nullOnDelete();
             $table->foreignId('parent_id')->nullable()->constrained('articles')->nullOnDelete();
             $table->timestamps();
         });

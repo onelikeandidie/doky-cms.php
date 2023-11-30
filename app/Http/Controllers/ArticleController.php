@@ -54,7 +54,6 @@ class ArticleController extends Controller
                     $request->user()->name,
                 ],
             ]))->toArray(),
-            'author_id' => $request->user()->id,
             'parent_id' => $parent_id,
         ]);
         return redirect()->route('articles.edit', $post);

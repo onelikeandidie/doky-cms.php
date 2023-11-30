@@ -22,7 +22,7 @@ First Basic Version
 - Backend
   - [ ] Compression of images
   - [ ] Index of all docs
-  - [ ] Serialization of docs into markdown
+  - [x] Serialization of docs into markdown
 - CMS
   - Roles
     - [x] Role-based permission system

@@ -59,6 +59,8 @@ class Meta
         }
         if (is_string($value)) {
             if (Str::contains($value, ',')) {
+                // Remove [] from the string
+                $value = str_replace(['[', ']'], '', $value);
                 $value = explode(',', $value);
             }
         }
@@ -82,5 +84,20 @@ class Meta
     public function toArray(): array
     {
         return $this->data;
+    }
+
+    public function toString(): string
+    {
+        $data = $this->data;
+        $lines = [];
+        // Sort by key
+        ksort($data);
+        foreach ($data as $key => $value) {
+            if (is_array($value)) {
+                $value = "[" . implode(',', $value) . "]";
+            }
+            $lines[] = $key . ': ' . $value;
+        }
+        return implode("\n", $lines);
     }
 }

@@ -2,7 +2,9 @@
 
 namespace App\Models;
 
+use App\Libraries\Markdown\Markdown;
 use App\Libraries\Markdown\Meta;
+use App\Libraries\Result\Result;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -19,7 +21,6 @@ class Article extends Model
         'slug',
         'content',
         'metadata',
-        'author_id',
         'parent_id',
     ];
 
@@ -81,7 +82,41 @@ class Article extends Model
         return $query->whereNull('parent_id')->with('children');
     }
 
+    public function toString(): string
+    {
+        $markdown = $this->content;
+        $meta = $this->meta();
+        $string = "---\n" . $meta->toString() . "\n";
+        $parent = $this->parent()->first();
+        if ($parent !== null) {
+            $string .= "parent: " . $parent->slug . "\n";
+        }
+        $string .= "\n";
+        $string .= "slug: " . $this->slug . "\n";
+        $string .= "---\n" . $markdown;
+        return $string;
+    }
+
     // Static functions
+
+    public static function fromString($content): Result
+    {
+        $markdown = new Markdown($content);
+        $meta = $markdown->meta();
+        if ($meta->isErr()) {
+            return $meta;
+        }
+        $meta = $meta->unwrap();
+        if (!$meta->get('slug')->isOk()) {
+            return $meta->get('slug');
+        }
+        $article = new self([
+            'slug' => $meta->get('slug')->unwrap(),
+            'content' => $markdown->extractContent(),
+            'metadata' => $meta->toArray(),
+        ]);
+        return Result::ok($article);
+    }
 
     /**
      * @param Collection<self> $articles

@@ -21,14 +21,23 @@ class Markdown
     public function __construct(string $content)
     {
         $this->content = $content;
+        $this->meta = null;
     }
 
-    public function meta(): Meta
+    /**
+     * @return Result<Meta,\Exception>
+     * @throws \App\Libraries\Result\PanicException
+     */
+    public function meta(): Result
     {
         if ($this->meta === null) {
-            $this->meta = self::extractMeta($this->content)->unwrap();
+            $result = self::extractMeta($this->content);
+            if ($result->isErr()) {
+                return $result;
+            }
+            $this->meta = $result->unwrap();
         }
-        return $this->meta;
+        return Result::ok($this->meta);
     }
 
     /**
@@ -81,10 +90,15 @@ class Markdown
             if (is_numeric($value)) {
                 $value = floatval($value);
             }
-            if (Str::contains($value, ',')) {
-                $value = collect(explode(',', $value))
-                    ->map(fn($item) => trim($item))
-                    ->toArray();
+            if (Str::contains($value, '[') && Str::contains($value, ']')) {
+                $value = str_replace(['[', ']'], '', $value);
+                if (empty($value)) {
+                    $value = [];
+                } else {
+                    $value = collect(explode(',', $value))
+                        ->map(fn($item) => trim($item))
+                        ->toArray();
+                }
             }
             // Store the key and value in the metadata array.
             $meta[$key] = $value;
@@ -100,15 +114,25 @@ class Markdown
         $enviroment->addExtension(new HelpContentExtension());
         $enviroment->addExtension(new CommonMarkCoreExtension());
         $converter = new MarkdownConverter($enviroment);
-        $content = $this->content;
+        $content = $this->extractContent();
+        return $converter->convert(
+            $content
+        );
+    }
+
+    /**
+     * @param string $content
+     * @return string
+     */
+    public function extractContent(): string
+    {
         // Remove the metadata from the content.
+        $content = $this->content;
         if (Str::contains($content, '---')) {
             $content = Str::after($content, '---');
             $content = Str::after($content, '---');
             $content = trim($content);
         }
-        return $converter->convert(
-            $content
-        );
+        return $content;
     }
 }
