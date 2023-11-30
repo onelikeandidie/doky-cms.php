@@ -65,6 +65,7 @@ class ArticleController extends Controller
      */
     public function show(Article $article)
     {
+        $this->authorize('view', $article);
         $markdown = new Markdown($article->content);
         $content = $markdown->toHtml();
         return view('articles.show', [
@@ -78,6 +79,7 @@ class ArticleController extends Controller
      */
     public function edit(Article $article)
     {
+        $this->authorize('update', $article);
         return view('articles.edit', [
             'article' => $article,
         ]);
@@ -93,7 +95,7 @@ class ArticleController extends Controller
         $article->content = $validated['content'];
         $meta = $article->meta();
         $meta->set('title', $validated['title']);
-        $authors = $meta->get('authors')->getOkOrDefault([]);
+        $authors = $meta->get('authors')->unwrapOrDefault([]);
         // Add the author if they don't exist
         if (!in_array($request->user()->name, $authors)) {
             $authors[] = $request->user()->name;
@@ -101,6 +103,27 @@ class ArticleController extends Controller
         $meta->set('authors', $authors);
         $meta->set('visibility', $validated['visibility']);
         $meta->set('priority', $validated['priority']);
+        $tags = $validated['tags'];
+        if ($tags !== null) {
+            $tags = explode(',', $tags);
+            $tags = array_map(fn(string $tag) => trim($tag), $tags);
+            $tags = array_filter($tags, fn(string $tag) => $tag !== '');
+            $meta->set('tags', $tags);
+        }
+        $allowed_users = $validated['allowed_users'];
+        if ($allowed_users !== null) {
+            $allowed_users = explode(',', $allowed_users);
+            $allowed_users = array_map(fn(string $user) => trim($user), $allowed_users);
+            $allowed_users = array_filter($allowed_users, fn(string $user) => $user !== '');
+            $meta->set('allowed_users', $allowed_users);
+        }
+        $allowed_roles = $validated['allowed_roles'];
+        if ($allowed_roles !== null) {
+            $allowed_roles = explode(',', $allowed_roles);
+            $allowed_roles = array_map(fn(string $role) => trim($role), $allowed_roles);
+            $allowed_roles = array_filter($allowed_roles, fn(string $role) => $role !== '');
+            $meta->set('allowed_roles', $allowed_roles);
+        }
         // Save the article
         $article->meta($meta);
         $article->save();

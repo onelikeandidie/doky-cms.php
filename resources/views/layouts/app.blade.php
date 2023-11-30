@@ -29,6 +29,10 @@
     @foreach($styles as $style)
         @vite($style)
     @endforeach
+
+    {{-- This is to make clients that have javascript disabled not able to
+        interact with things that require javascript --}}
+    <noscript><style> .js-only { display: none } </style></noscript>
 </head>
 <body class="tw-min-h-screen tw-font-sans tw-antialiased tw-bg-gray-100 tw-text-neutral-900 dark:tw-bg-gray-800 dark:tw-text-white"
       x-data="{ darkMode: {{ $darkMode ? 'true' : 'false' }} }"

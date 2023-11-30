@@ -1,9 +1,11 @@
 <nav class="tw-h-12 tw-bg-neutral-100 tw-border-b-2 tw-border-neutral-200 dark:tw-bg-gray-800 dark:tw-border-gray-600">
     <div class="tw-h-12 tw-container tw-m-auto tw-flex tw-items-stretch">
         <div class="tw-flex tw-flex-1 tw-items-center tw-justify-start">
-            <a href="{{ route('articles.index') }}" class="tw-flex tw-items-center tw-justify-center hover:tw-underline">
+            <a href="{{ route('articles.index') }}"
+               class="tw-flex tw-items-center tw-justify-center hover:tw-underline">
                 <span class="tw-ml-2">
-                    <x-icons.heroicon.solid.book-open class="tw-inline-block tw-w-6 tw-h-6 tw-text-gray-800 dark:tw-text-gray-200"/>
+                    <x-icons.heroicon.solid.book-open
+                            class="tw-inline-block tw-w-6 tw-h-6 tw-text-gray-800 dark:tw-text-gray-200"/>
                     {{ __('Docs') }}
                 </span>
             </a>
@@ -20,9 +22,10 @@
             @if(auth()->check())
                 <div class="tw-flex tw-items-center tw-justify-center">
                     <a class="tw-flex tw-items-center tw-justify-center tw-group"
-                          href="{{ route('dashboard') }}">
+                       href="{{ route('dashboard') }}">
                         <div class="tw-flex tw-items-center tw-justify-center tw-w-8 tw-h-8 tw-rounded-full tw-bg-gray-300">
-                            <x-icons.heroicon.solid.user-circle class="tw-w-6 tw-h-6 tw-text-white dark:tw-text-gray-800"/>
+                            <x-icons.heroicon.solid.user-circle
+                                    class="tw-w-6 tw-h-6 tw-text-white dark:tw-text-gray-800"/>
                         </div>
                         <div class="tw-ml-2 group-hover:tw-underline">
                             <div class="tw-text-xs tw-font-medium tw-text-gray-600 dark:tw-text-gray-400">
@@ -34,13 +37,19 @@
                         </div>
                     </a>
                 </div>
+                <a href="{{ route('logout') }}"
+                   title="{{ __('Logout') }}"
+                   class="tw-flex tw-items-center tw-justify-center tw-w-8 tw-h-8 tw-rounded-full tw-bg-gray-300">
+                    <x-icons.heroicon.solid.arrow-right-on-rectangle
+                            class="tw-w-6 tw-h-6 tw-text-white dark:tw-text-gray-800"/>
+                </a>
             @else
-                <div class="tw-flex tw-items-center tw-justify-center">
-                    <a href="{{ route('login') }}"
-                       class="tw-px-2 tw-py-1 tw-rounded tw-border tw-border-gray-300 tw-bg-white tw-text-gray-700 hover:tw-bg-gray-50">
-                        {{ __('Log in') }}
-                    </a>
-                </div>
+                <a href="{{ route('login') }}"
+                   title="{{ __('Login') }}"
+                   class="tw-flex tw-items-center tw-justify-center tw-w-8 tw-h-8 tw-rounded-full tw-bg-gray-300">
+                    <x-icons.heroicon.solid.arrow-right-on-rectangle
+                            class="tw-w-6 tw-h-6 tw-text-white dark:tw-text-gray-800"/>
+                </a>
             @endif
         </div>
     </div>

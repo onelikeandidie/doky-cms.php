@@ -90,8 +90,8 @@ class Article extends Model
     {
         // Sort by priority then title
         $articles = $articles->sort(function (Article $a, Article $b) {
-            $aPriority = $a->meta()->get('priority')->getOkOrDefault(0);
-            $bPriority = $b->meta()->get('priority')->getOkOrDefault(0);
+            $aPriority = $a->meta()->get('priority')->unwrapOrDefault(0);
+            $bPriority = $b->meta()->get('priority')->unwrapOrDefault(0);
             if ($aPriority === $bPriority) {
                 return $a->meta()->get('title')->getOk() <=> $b->meta()->get('title')->getOk();
             }

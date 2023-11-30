@@ -21,26 +21,30 @@ class ArticlePolicy
     /**
      * Determine whether the user can view the model.
      */
-    public function view(User $user, Article $post): bool
+    public function view(User $user, Article $article): bool
     {
-        if ($user->id === $post->author_id) {
+        if ($user->id === $article->author_id) {
             return true;
         }
-        $visibility = $post->setting('visibility');
+        $visibility = $article->meta()->get('visibility')->unwrapOrDefault('private');
         if ($visibility === null) {
             return false;
         }
-        switch ($visibility->value) {
+        switch ($visibility) {
             case 'public':
                 return true;
             case 'private':
-                return $user->id === $post->author_id;
+                return $user->id === $article->author_id;
             case 'restricted':
-                $allowedUsers = $post->setting('allowed_users');
-                if ($allowedUsers === null) {
-                    return false;
+                $allowedUsers = $article->meta()->get('allowed_users')->unwrapOrDefault([]);
+                $isAllowed = in_array($user->name, $allowedUsers);
+                if (!$isAllowed) {
+                    // Maybe roles?
+                    $allowedRoles = $article->meta()->get('allowed_roles')->unwrapOrDefault([]);
+                    $isAllowed = $user->roles()->get()
+                        ->first(fn(Role $role) => in_array($role->name, $allowedRoles)) !== null;
                 }
-                return $allowedUsers->value->contains($user->id);
+                return $isAllowed;
             case 'unlisted':
                 return false;
         }

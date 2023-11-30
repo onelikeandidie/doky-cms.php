@@ -94,7 +94,7 @@ class Result
         return $this->ok;
     }
 
-    public function getOkOrDefault(mixed $default): mixed
+    public function unwrapOrDefault(mixed $default): mixed
     {
         if ($this->isOk()) {
             return $this->ok;

@@ -40,13 +40,22 @@ class ArticleUpdateFormSubmitRequest extends FormRequest
             'visibility' => [
                 'required',
                 'string',
-                'in:public,private',
+                'in:public,private,restricted,unlisted',
             ],
             'priority' => [
                 'required',
                 'integer',
                 'min:0',
                 'max:100',
+            ],
+            'tags' => [
+                'nullable:string',
+            ],
+            'allowed_users' => [
+                'nullable:string',
+            ],
+            'allowed_roles' => [
+                'nullable:string',
             ],
         ];
     }
