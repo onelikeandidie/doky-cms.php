@@ -28,7 +28,7 @@ First Basic Version
   - Roles
     - [x] Role-based permission system
   - Users
-    - [ ] Author name in doc
+    - [x] Author name in doc
     - [x] Co-authoring
   - Editor
     - [x] Markdown editor
