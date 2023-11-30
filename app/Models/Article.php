@@ -53,20 +53,6 @@ class Article extends Model
         return $this->belongsTo(User::class, 'author_id');
     }
 
-    public function settings(): HasMany
-    {
-        return $this->hasMany(ArticleSettings::class, 'article_id');
-    }
-
-    /**
-     * @param string $key
-     * @return ArticleSettings|null
-     */
-    public function setting(string $key): ?ArticleSettings
-    {
-        return $this->settings()->firstWhere('key', $key);
-    }
-
     public function parent(): BelongsTo
     {
         return $this->belongsTo(Article::class, 'parent_id');

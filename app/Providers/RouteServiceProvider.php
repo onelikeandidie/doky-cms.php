@@ -5,6 +5,7 @@ namespace App\Providers;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Foundation\Support\Providers\RouteServiceProvider as ServiceProvider;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\Route;
 
@@ -39,6 +40,23 @@ class RouteServiceProvider extends ServiceProvider
 
                 Route::middleware('web')
                     ->group(base_path('routes/web.php'));
+
+                // Just serve the public directory
+                Route::get('/public/{path}', function ($path) {
+                    $real_path = public_path($path);
+                    if (!file_exists($real_path)) {
+                        abort(404);
+                    }
+                    $type = File::mimeType($real_path);
+                    if (str_ends_with($path, '.js')) {
+                        $type = 'text/javascript';
+                    }
+                    $size = File::size($real_path);
+                    return response()->file($real_path, [
+                        'Content-Type' => $type,
+                        'Content-Length' => $size,
+                    ]);
+                })->where('path', '.*');
             });
         });
     }

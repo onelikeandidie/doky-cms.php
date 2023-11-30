@@ -4,6 +4,7 @@ use App\Http\Controllers\Admin\PanelController;
 use App\Http\Controllers\ArticleController;
 use App\Http\Controllers\ArticleSettingsController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\UploadController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -43,12 +44,6 @@ Route::resource('articles', ArticleController::class)
     ])
     ->except(['create', 'store']);
 
-Route::resource('articles.settings', ArticleSettingsController::class)
-    ->scoped([
-        'article' => 'slug',
-    ])
-    ->only(['edit', 'update']);
-
 Route::get('/dashboard', [PanelController::class, 'index'])
     ->middleware(['auth', 'verified'])->name('dashboard');
 
@@ -67,5 +62,9 @@ Route::post('/dark-mode/toggle', function (Request $request) {
     session()->put('dark_mode', $request->input('dark_mode'));
     dump($request->input('dark_mode'));
 })->name('dark-mode');
+
+Route::middleware(['auth', 'permission:article.create'])
+    ->put('/upload/image', [UploadController::class, 'store'])
+    ->name('upload.image');
 
 require __DIR__ . '/auth.php';

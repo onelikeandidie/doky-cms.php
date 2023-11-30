@@ -2,7 +2,9 @@
 
 namespace App\Libraries\Markdown\Extensions\HelpContentExtensionRenderers;
 
+use App\Libraries\Sync\Sync;
 use App\Libraries\Youtube\Youtube;
+use Illuminate\Support\Str;
 use League\CommonMark\Extension\CommonMark\Node\Inline\Image;
 use League\CommonMark\Node\Inline\Text;
 use League\CommonMark\Node\Node;
@@ -56,17 +58,36 @@ class EmbededRenderer implements NodeRendererInterface
     public function renderImage(Node $node, ChildNodeRendererInterface $childRenderer)
     {
         $url = $node->getUrl();
-        if (str_starts_with($url, '/resources/')) {
-            $url = str_replace('/resources/', 'public/', $url);
+        if (Str::contains($url, '://')) {
+            // This is an absolute URL
+            $attrs = $node->data->get('attributes', []);
+            $attrs['src'] = $url;
+            return new HtmlElement('img', $attrs);
         }
-        if (str_starts_with($url, 'public/image')) {
-            $url = image_url($url);
+        if (str_starts_with($url, 'public/')) {
+            // This is a relative URL
+            $url = asset($url);
+        }
+        if (Str::startsWith($url, '/' . Sync::getInstance()->getDriver()->getRelativePath())) {
+            // This is a relative URL to the sync directory
+            $url = asset('/public/storage/sync' . $url);
         }
         $attrs = $node->data->get('attributes', []);
         $attrs['class'] = 'tw-object-contain tw-object-center tw-w-full tw-h-full tw-rounded-lg';
         $attrs['target'] = '_blank';
         $attrs['rel'] = 'noopener noreferrer';
         $attrs['data-src'] = $url;
+        // Get the alt text from a child text node
+        $alt = null;
+        foreach ($node->children() as $child) {
+            if ($child instanceof Text) {
+                $alt = $child->getLiteral();
+                break;
+            }
+        }
+        if ($alt !== null) {
+            $attrs['alt'] = $alt;
+        }
         return new HtmlElement('img', $attrs);
     }
 }

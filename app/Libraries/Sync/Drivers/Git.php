@@ -550,9 +550,12 @@ class Git implements ISyncDriver
         });
         // Get the files in each directory
         foreach ($dirs as $dir) {
-            $files = File::files($dir);
+            $real_dir = $this->sync_path . '/' . $dir;
+            $files = File::files($real_dir);
             // Add ?? to the beginning of each file
             $files = collect($files)->map(function ($file) {
+                // Get the relative path to the file
+                $file = Str::replaceFirst($this->sync_path . '/', '', $file);
                 return '?? ' . $file;
             });
             // Add the files to the list of changed files
@@ -576,7 +579,10 @@ class Git implements ISyncDriver
             })
             ->filter(function ($line) {
                 // Remove any lines that are not markdown files
-                return Str::endsWith($line, '.md');
+                $isMarkdown = Str::endsWith($line, '.md');
+                // Unless they are in the images directory
+                $isImage = Str::startsWith($line, $this->getRelativePath() . '/' . 'images/');
+                return $isMarkdown || $isImage;
             })
             ->toArray();
         return Result::ok($files_changed);
@@ -585,5 +591,10 @@ class Git implements ISyncDriver
     public function getDirectory(): string
     {
         return $this->sync_path . '/' . $this->path;
+    }
+
+    public function getRelativePath(): string
+    {
+        return $this->path;
     }
 }

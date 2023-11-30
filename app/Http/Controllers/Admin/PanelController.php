@@ -8,12 +8,28 @@ use App\Libraries\Sync\Sync;
 use App\Models\Article;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
 
 class PanelController extends Controller
 {
-    public function index(Sync $sync)
+    public function index(Request $request, Sync $sync)
     {
-        return view('dashboard');
+        // Check if the request was a redirect with a highlight from the upload controller
+        $highlight = null;
+        if ($request->session()->has('highlight')) {
+            $highlight = $request->session()->get('highlight');
+            $request->session()->forget('highlight');
+        }
+        $images = [];
+        $files = File::files($sync->getDriver()->getDirectory() . '/images');
+        foreach ($files as $file) {
+            $images[] = asset('/public/storage/sync/' . $sync->getDriver()->getRelativePath() . '/images/' . $file->getFilename());
+        }
+        return view('dashboard', [
+            'images' => $images,
+            'highlight' => $highlight
+        ]);
     }
 
     public function syncDownload(Sync $sync)
@@ -27,6 +43,11 @@ class PanelController extends Controller
         $filesChanged = $result->unwrap();
         foreach ($filesChanged as $fileChanged) {
             $filePath = $sync->getSyncPath() . '/' . $fileChanged;
+            // Check if the file is a markdown file
+            if (!Str::endsWith($filePath, '.md')) {
+                Log::debug('Skipping file ' . $filePath . ' because it is not a markdown file.');
+                continue;
+            }
             $fileContents = File::get($filePath);
             $article = Article::fromString($fileContents);
             if ($article->isErr()) {
@@ -39,16 +60,13 @@ class PanelController extends Controller
             if ($existingArticle === null) {
                 // If the article doesn't exist, create it
                 $article->save();
-                $existingArticle = $article;
             } else {
                 // If the article exists, update it
                 $existingArticle->content = $article->content;
                 $existingArticle->meta($article->meta());
                 $existingArticle->save();
             }
-            dump($fileContents, $existingArticle);
         }
-        dd($filesChanged);
         return redirect()->route('dashboard');
     }
 

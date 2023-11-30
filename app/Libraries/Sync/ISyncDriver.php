@@ -71,4 +71,5 @@ interface ISyncDriver
     public function lastSync(): Result;
 
     public function getDirectory(): string;
+    public function getRelativePath(): string;
 }

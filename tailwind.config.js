@@ -76,6 +76,8 @@ export default {
         'tw-text-h3',
         'tw-text-h4',
         'tw-text-h5',
+        // Include text positions
+        'tw-text-center',
         // Include list styles
         'tw-list-none',
         'tw-list-disc',
@@ -107,8 +109,13 @@ export default {
         // Include some padding tops for the file trees
         'tw-mt-2',
         'tw-pb-2',
+        // Aspect ratio
+        'tw-aspect-w-16',
+        'tw-aspect-h-9'
     ],
     plugins: [
+        // Plugin for aspect ratio
+        require('@tailwindcss/aspect-ratio'),
         radialGradientPlugin,
     ],
 }
