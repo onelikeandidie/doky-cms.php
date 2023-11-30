@@ -4,7 +4,8 @@ A PHP CMS that syncs the documentation written to and from a git repository.
 
 The basic idea of this CMS is that the documentation written to it will be
 available both in the development repository as markdown files but then also
-be available for the public.
+be in a database. This way the documentation can be written to in a web
+interface and then be synced to the repository.
 
 ## Tasks/Roadmap
 

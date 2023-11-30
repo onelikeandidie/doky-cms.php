@@ -29,12 +29,17 @@ class RouteServiceProvider extends ServiceProvider
         });
 
         $this->routes(function () {
-            Route::middleware('api')
-                ->prefix('api')
-                ->group(base_path('routes/api.php'));
+            // Put all routes into optional route prefix from .env file
+            $url = config('app.url');
+            $prefix = parse_url($url, PHP_URL_PATH);
+            Route::prefix($prefix)->group(function () {
+                Route::middleware('api')
+                    ->prefix('api')
+                    ->group(base_path('routes/api.php'));
 
-            Route::middleware('web')
-                ->group(base_path('routes/web.php'));
+                Route::middleware('web')
+                    ->group(base_path('routes/web.php'));
+            });
         });
     }
 }
