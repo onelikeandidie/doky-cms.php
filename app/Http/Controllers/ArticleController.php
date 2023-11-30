@@ -24,6 +24,7 @@ class ArticleController extends Controller
      */
     public function create(?Article $article)
     {
+        $this->authorize('create', $article);
         return view('articles.create', [
             'article' => $article,
         ]);
@@ -34,6 +35,7 @@ class ArticleController extends Controller
      */
     public function store(ArticleCreateFormSubmitRequest $request, Article $article)
     {
+        $this->authorize('create', $article);
         $parent_id = null;
         if ($article->exists) {
             $parent_id = $article->id;

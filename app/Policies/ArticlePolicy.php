@@ -23,7 +23,10 @@ class ArticlePolicy
      */
     public function view(User $user, Article $article): bool
     {
-        if ($user->id === $article->author_id) {
+        $authors = $article->meta()->get('authors')->unwrapOrDefault([]);
+        $isAuthor = in_array($user->name, $authors);
+        // The author can always view the article
+        if ($isAuthor) {
             return true;
         }
         $visibility = $article->meta()->get('visibility')->unwrapOrDefault('private');
@@ -34,7 +37,8 @@ class ArticlePolicy
             case 'public':
                 return true;
             case 'private':
-                return $user->id === $article->author_id;
+                // If the user is not the author, then they can't view the article
+                return false;
             case 'restricted':
                 $allowedUsers = $article->meta()->get('allowed_users')->unwrapOrDefault([]);
                 $isAllowed = in_array($user->name, $allowedUsers);
@@ -56,9 +60,7 @@ class ArticlePolicy
      */
     public function create(User $user): bool
     {
-        $role_with_permission = $user->roles()->get()
-            ->first(fn(Role $role) => $role->hasPermission('article.create'));
-        return $role_with_permission !== null;
+        return $user->hasPermission('article.create');
     }
 
     /**
@@ -66,9 +68,7 @@ class ArticlePolicy
      */
     public function update(User $user, Article $article): bool
     {
-        $role_with_permission = $user->roles()->get()
-            ->first(fn(Role $role) => $role->hasPermission('article.update'));
-        return $role_with_permission !== null;
+        return $user->hasPermission('article.update') || $user->id === $article->author_id;
     }
 
     /**

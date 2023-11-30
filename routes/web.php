@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Admin\PanelController;
 use App\Http\Controllers\ArticleController;
 use App\Http\Controllers\ArticleSettingsController;
 use App\Http\Controllers\ProfileController;
@@ -30,10 +31,8 @@ Route::get('/articles/{article}/create', [ArticleController::class, 'create'])
     ->name('articles.create');
 // Store article routes
 Route::post('/articles', [ArticleController::class, 'store'])
-    ->middleware(['auth', 'permission:article.create'])
     ->name('articles.store.orphan');
 Route::post('/articles/{article}', [ArticleController::class, 'store'])
-    ->middleware(['auth', 'permission:article.create'])
     ->name('articles.store');
 // Typical article routes
 Route::resource('articles', ArticleController::class)
@@ -50,9 +49,13 @@ Route::resource('articles.settings', ArticleSettingsController::class)
     ])
     ->only(['edit', 'update']);
 
-Route::get('/dashboard', function () {
-    return view('dashboard');
-})->middleware(['auth', 'verified'])->name('dashboard');
+Route::get('/dashboard', [PanelController::class, 'index'])
+    ->middleware(['auth', 'verified'])->name('dashboard');
+
+Route::post('/dashboard/sync/download', [PanelController::class, 'syncDownload'])
+    ->middleware(['auth', 'verified'])->name('dashboard.sync.download');
+Route::post('/dashboard/sync/upload', [PanelController::class, 'syncUpload'])
+    ->middleware(['auth', 'verified'])->name('dashboard.sync.upload');
 
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
@@ -60,7 +63,7 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
-Route::middleware('auth')->post('/dark-mode/toggle', function (Request $request) {
+Route::post('/dark-mode/toggle', function (Request $request) {
     session()->put('dark_mode', $request->input('dark_mode'));
     dump($request->input('dark_mode'));
 })->name('dark-mode');

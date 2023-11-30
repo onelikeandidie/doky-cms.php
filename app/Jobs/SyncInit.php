@@ -11,7 +11,7 @@ use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Log;
 
-class SyncInit implements ShouldQueue, ShouldBeUnique
+class SyncInit implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
@@ -31,15 +31,5 @@ class SyncInit implements ShouldQueue, ShouldBeUnique
         $result = $this->sync->getDriver()->init();
         $result = $result->unwrap();
         Log::debug('Sync init result', ['result' => $result]);
-    }
-
-    /**
-     * This makes sure that only one instance of this job is running at a time.
-     *
-     * @return string
-     */
-    public function uniqueId(): string
-    {
-        return 'sync-init';
     }
 }

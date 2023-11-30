@@ -54,4 +54,11 @@ class User extends Authenticatable
     {
         return $this->belongsToMany(Role::class);
     }
+
+    public function hasPermission(string $permission): bool
+    {
+        $role_with_permission = $this->roles()->get()
+            ->first(fn(Role $role) => $role->hasPermission($permission));
+        return $role_with_permission !== null;
+    }
 }

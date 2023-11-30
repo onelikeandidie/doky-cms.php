@@ -40,7 +40,7 @@ interface ISyncDriver
      * }
      * ```
      *
-     * @return Result<array, string>
+     * @return Result<array<string>, string>
      */
     public function download(): Result;
 
@@ -69,4 +69,6 @@ interface ISyncDriver
      * @return Result<int, string>
      */
     public function lastSync(): Result;
+
+    public function getDirectory(): string;
 }

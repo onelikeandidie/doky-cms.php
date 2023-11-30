@@ -19,7 +19,7 @@ class Sync {
     /**
      * @throws MissingDriverException
      */
-    public static function getInstance(): self
+    public static function getInstance($initialize_driver = true): self
     {
         if (self::$instance !== null) {
             return self::$instance;
@@ -35,7 +35,7 @@ class Sync {
         }
         $self = new self();
         $self->driver = new $driver($config_sync_path);
-        if (!$self->driver->isInitialized()) {
+        if ($initialize_driver && !$self->driver->isInitialized()) {
             Log::debug('Sync driver not initialized, dispatching SyncInit job');
             SyncInit::dispatch($self);
         }
@@ -46,5 +46,10 @@ class Sync {
     public function getDriver(): ISyncDriver
     {
         return $this->driver;
+    }
+
+    public function getSyncPath(): string
+    {
+        return config('sync.path');
     }
 }

@@ -84,6 +84,33 @@ class Git implements ISyncDriver
         if ($result->isErr()) {
             return $result;
         }
+        // Set up repo user info
+        $process = Process::path($this->sync_path)
+            ->command([
+                $this->bin,
+                'config',
+                'user.name',
+                'Doky Sync',
+            ])
+            ->run();
+        // Check if the process failed
+        if ($process->exitCode() !== 0) {
+            $err = $process->errorOutput();
+            return Result::err($err);
+        }
+        $process = Process::path($this->sync_path)
+            ->command([
+                $this->bin,
+                'config',
+                'user.email',
+                'doky@example.com',
+            ])
+            ->run();
+        // Check if the process failed
+        if ($process->exitCode() !== 0) {
+            $err = $process->errorOutput();
+            return Result::err($err);
+        }
         // Set up the repo to not gpg sign commits
         $process = Process::path($this->sync_path)
             ->command([
@@ -181,6 +208,22 @@ class Git implements ISyncDriver
         $append = File::append($this->sync_path . '/.git/info/sparse-checkout', $this->path . "\n");
         if ($append == 0) {
             return Result::err('Failed to append path to sparse checkout');
+        }
+        // Checkout the branch
+        $process = Process::path($this->sync_path)
+            ->command([
+                $this->bin,
+                'checkout',
+                $this->branch,
+            ])
+            ->run();
+        // Check if the process failed
+        if ($process->exitCode() !== 0) {
+            $err = $process->errorOutput();
+            Log::debug('Sparse checkout failed', [
+                'err' => $err,
+            ]);
+            return Result::err($err);
         }
         return Result::ok();
     }
@@ -315,25 +358,11 @@ class Git implements ISyncDriver
         $current_hash = $current_hash->getOk();
 
         // Check if there are any changes to the repo
-        $process = Process::path($this->sync_path)
-            ->command([
-                $this->bin,
-                'status',
-                '--porcelain',
-            ])
-            ->run();
-        // Check if the process failed
-        if ($process->exitCode() !== 0) {
-            $err = $process->errorOutput();
-            return Result::err($err);
+        $files_changed = $this->getChangedFiles($this->sync_path);
+        if ($files_changed->isErr()) {
+            return $files_changed;
         }
-        // Get the output
-        $files_changed = $process->output();
-        // Check if there are any changes
-        if (empty(trim($files_changed))) {
-            // No changes
-            return Result::err(new NoChangesException());
-        }
+        $files_changed = $files_changed->unwrap();
 
         // Create a new branch
         $temp_sync_branch = 'sync-' . Random::generate(8);
@@ -350,27 +379,6 @@ class Git implements ISyncDriver
             $err = $process->errorOutput();
             return Result::err($err);
         }
-
-        // Get list of all files changed
-        // The output of this command looks like this:
-        // $ git status --porcelain
-        //  M index.md
-        // AM test.md
-        // ?? test2.md
-        $files_changed = collect(explode("\n", $files_changed))
-            ->map(function ($line) {
-                // Remove the first two characters
-                return trim(substr($line, 2));
-            })
-            ->filter(function ($line) {
-                // Remove any empty lines
-                return !empty($line);
-            })
-            ->filter(function ($line) {
-                // Remove any lines that are not markdown files
-                return Str::endsWith($line, '.md');
-            })
-            ->toArray();
         // Add all files to the commit
         $process = Process::path($this->sync_path)
             ->command([
@@ -499,5 +507,83 @@ class Git implements ISyncDriver
             return $touch;
         }
         return Result::ok($files_changed);
+    }
+
+    protected function getChangedFiles($dir)
+    {
+        // Check if there are any changes to the repo
+        $process = Process::path($this->sync_path)
+            ->command([
+                $this->bin,
+                'status',
+                '--porcelain',
+            ])
+            ->run();
+        // Check if the process failed
+        if ($process->exitCode() !== 0) {
+            $err = $process->errorOutput();
+            return Result::err($err);
+        }
+        // Get the output
+        $files_changed = $process->output();
+        // Check if there are any changes
+        if (empty(trim($files_changed))) {
+            // No changes
+            return Result::err(new NoChangesException());
+        }
+
+        // Get list of all files changed
+        // The output of this command looks like this:
+        // $ git status --porcelain
+        //  M index.md
+        // AM test.md
+        // ?? test2/
+        $files_changed = collect(explode("\n", $files_changed));
+        // If there is a directory, then we need to recursively get all files in that directory
+        $dirs = $files_changed->filter(function ($line) {
+            return Str::endsWith($line, '/');
+        })->map(function ($line) {
+            // Remove the ?? from the beginning of the line
+            $line = trim(substr($line, 2));
+            // Get the full path to the directory
+            return $line;
+        });
+        // Get the files in each directory
+        foreach ($dirs as $dir) {
+            $files = File::files($dir);
+            // Add ?? to the beginning of each file
+            $files = collect($files)->map(function ($file) {
+                return '?? ' . $file;
+            });
+            // Add the files to the list of changed files
+            $files_changed = $files_changed->merge($files);
+        }
+        // Remove any directories from the list
+        $files_changed = $files_changed->filter(function ($line) {
+            return !Str::endsWith($line, '/');
+        });
+
+
+        // Remove any empty values
+        $files_changed = $files_changed
+            ->map(function ($line) {
+                // Remove the first two characters
+                return trim(substr($line, 2));
+            })
+            ->filter(function ($line) {
+                // Remove any empty lines
+                return !empty($line);
+            })
+            ->filter(function ($line) {
+                // Remove any lines that are not markdown files
+                return Str::endsWith($line, '.md');
+            })
+            ->toArray();
+        return Result::ok($files_changed);
+    }
+
+    public function getDirectory(): string
+    {
+        return $this->sync_path . '/' . $this->path;
     }
 }

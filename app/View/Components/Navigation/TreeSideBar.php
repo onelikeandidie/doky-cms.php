@@ -9,19 +9,13 @@ class TreeSideBar extends Component
 {
     public function render()
     {
-        $articles = Article::query()
-            ->tree()
-            ->with('children')
-            ->get();
-        $articles = $articles->filter(function (Article $article) {
-            $visibility = $article->meta()->get('visibility')->unwrapOrDefault('private');
-            // If the article is private, check if the user can view it
-            if ($visibility === 'private' || $visibility === 'restricted') {
-                return auth()->check() && auth()->user()->can('view', $article);
-            }
-            return $visibility === 'public';
-        });
-        $articles = Article::sortTree($articles);
+        // Get the articles from the cache
+        $articles = cache()->get('articles');
+        if ($articles === null) {
+            $articles = Article::tree();
+            // Cache the articles
+            cache()->put('articles', $articles, 120);
+        }
         return view('components.navigation.tree-side-bar', [
             'articles' => $articles,
         ]);

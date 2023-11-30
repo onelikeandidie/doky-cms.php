@@ -139,4 +139,21 @@ class Article extends Model
         }
         return $articles;
     }
+
+    public static function tree(): Collection
+    {
+        $articles = Article::query()
+            ->tree()
+            ->with('children')
+            ->get();
+        $articles = $articles->filter(function (Article $article) {
+            $visibility = $article->meta()->get('visibility')->unwrapOrDefault('private');
+            // If the article is private, check if the user can view it
+            if ($visibility === 'private' || $visibility === 'restricted') {
+                return auth()->check() && auth()->user()->can('view', $article);
+            }
+            return $visibility === 'public';
+        });
+        return Article::sortTree($articles);
+    }
 }
