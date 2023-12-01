@@ -83,6 +83,16 @@ class Article extends Model
         return $string;
     }
 
+    public function breadcrumb(): \Illuminate\Support\Collection
+    {
+        $breadcrumb = collect([$this]);
+        $parent = $this->parent()->first();
+        if ($parent !== null) {
+            $breadcrumb = $parent->breadcrumb()->merge($breadcrumb);
+        }
+        return $breadcrumb;
+    }
+
     // Static functions
 
     public static function fromString($content): Result

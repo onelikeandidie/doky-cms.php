@@ -9,7 +9,7 @@
                       action="{{ route('articles.store.orphan') }}"
                   @endif
                   method="POST"
-                  x-data="{ slug: '{{ old('slug') }}', title: '{{ old('title') }}' }">
+                  x-data="{ slug: '', title: '', parentSlug: '{{ $parentSlug }}' }">
                 @csrf
                 <h1 class="tw-text-3xl">
                     <span class="tw-text-neutral-600 dark:tw-text-neutral-200">
@@ -67,7 +67,7 @@
                         {{-- Button to generate slug from title --}}
                         <button type="button"
                                 class="tw-px-2 tw-py-1 tw-rounded tw-rounded-l-none tw-border tw-border-gray-300 tw-bg-white tw-text-gray-700 hover:tw-bg-gray-50"
-                                x-on:click="console.log(title); slug = title.toLowerCase().replace(/[^a-z0-9-//]/g, '-')">
+                                x-on:click="slug = ''; if(parentSlug) slug += parentSlug + '/'; slug += title.toLowerCase().replace(/[^a-z0-9-//]/g, '-')">
                             <x-icons.heroicon.solid.bolt class="tw-w-5 tw-h-5 tw-inline-block"/>
                             {{ __("Generate") }}
                         </button>

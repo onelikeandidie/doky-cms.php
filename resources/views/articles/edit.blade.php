@@ -8,7 +8,14 @@
             <form class="tw-space-x-2 tw-space-y-2"
                   action="{{ route('articles.update', $article) }}"
                   method="POST"
-                  x-data="{ slug: '{{ $article->slug }}', title: '{{ $article->meta()->get('title')->unwrap() }}', visibility: '{{ $visibility }}' }">
+                  {{-- Legends say that the desire to hate JavaScript, is equal to the desire to love it --}}
+                  {{-- I have made a mess of this code. Please don't hate --}}
+                  x-data="{
+                      slug: '{{ $article->slug }}',
+                      title: '{{ str_replace('\'', '\\\'', $article->meta()->get('title')->unwrap()) }}',
+                      visibility: '{{ $visibility }}',
+                      parentSlug: '{{ $parentSlug }}'
+                  }">
                 @csrf
                 @method('PATCH')
                 <h1 class="tw-text-3xl">
@@ -59,7 +66,7 @@
                         {{-- Button to generate slug from title --}}
                         <button type="button"
                                 class="tw-px-2 tw-py-1 tw-rounded tw-rounded-l-none tw-border tw-border-gray-300 tw-bg-white tw-text-gray-700 hover:tw-bg-gray-50 js-only"
-                                x-on:click="console.log(title); slug = title.toLowerCase().replace(/[^a-z0-9-//]/g, '-')">
+                                x-on:click="slug = parentSlug + '/' +  title.toLowerCase().replace(/[^a-z0-9-//]/g, '-')">
                             <x-icons.heroicon.solid.bolt class="tw-w-5 tw-h-5 tw-inline-block"/>
                             {{ __("Generate") }}
                         </button>
@@ -207,7 +214,8 @@
                                 <option x-bind:value="user" x-text="user"></option>
                             </template>
                         </select>
-                        <button type="button" class="tw-px-2 tw-py-1 tw-rounded tw-border tw-border-gray-300 tw-bg-white tw-text-gray-700 hover:tw-bg-gray-50"
+                        <button type="button"
+                                class="tw-px-2 tw-py-1 tw-rounded tw-border tw-border-gray-300 tw-bg-white tw-text-gray-700 hover:tw-bg-gray-50"
                                 x-on:click="if(!userInput){return false} allowedUsers.push(userInput); userInput = ''">
                             <x-icons.heroicon.solid.plus class="tw-w-5 tw-h-5 tw-inline-block"/>
                             {{ __("Add User") }}
@@ -273,7 +281,8 @@
                                 <option x-bind:value="role" x-text="role"></option>
                             </template>
                         </select>
-                        <button type="button" class="tw-px-2 tw-py-1 tw-rounded tw-border tw-border-gray-300 tw-bg-white tw-text-gray-700 hover:tw-bg-gray-50"
+                        <button type="button"
+                                class="tw-px-2 tw-py-1 tw-rounded tw-border tw-border-gray-300 tw-bg-white tw-text-gray-700 hover:tw-bg-gray-50"
                                 x-on:click="if(!roleInput){return false} allowedRoles.push(roleInput); roleInput = ''">
                             <x-icons.heroicon.solid.plus class="tw-w-5 tw-h-5 tw-inline-block"/>
                             {{ __("Add Role") }}

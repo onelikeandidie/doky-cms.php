@@ -28,7 +28,7 @@ class ArticleCreateFormSubmitRequest extends FormRequest
                 'string',
                 'max:255',
                 'unique:articles',
-                'regex:/^[a-z0-9]+(?:-[a-z0-9]+)*$/',
+                'regex:/^[a-z0-9-\/]+$/',
             ],
             'title' => [
                 'required',

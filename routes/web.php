@@ -37,12 +37,21 @@ Route::post('/articles/{article}', [ArticleController::class, 'store'])
     ->name('articles.store');
 // Typical article routes
 Route::resource('articles', ArticleController::class)
+    ->where([
+        'article' => '.*',
+    ])
     ->scoped([
         // This makes it so that the article slug is used in the route
         // making a SEO friendly URL like /articles/my-first-article
         'article' => 'slug',
     ])
-    ->except(['create', 'store']);
+    ->except(['create', 'store', 'show']);
+Route::get('/articles/{article}', [ArticleController::class, 'show'])
+    ->where('article', '.*')
+    ->setBindingFields([
+        'article' => 'slug',
+    ])
+    ->name('articles.show');
 
 Route::get('/dashboard', [PanelController::class, 'index'])
     ->middleware(['auth', 'verified'])->name('dashboard');

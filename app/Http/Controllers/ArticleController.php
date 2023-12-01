@@ -25,8 +25,14 @@ class ArticleController extends Controller
     public function create(?Article $article)
     {
         $this->authorize('create', $article);
+        $parentSlug = null;
+        if ($article->exists) {
+            $breadcrumb = $article->breadcrumb();
+            $parentSlug = $breadcrumb->last()->slug;
+        }
         return view('articles.create', [
             'article' => $article,
+            'parentSlug' => $parentSlug,
         ]);
     }
 
@@ -95,8 +101,13 @@ class ArticleController extends Controller
     public function edit(Article $article)
     {
         $this->authorize('update', $article);
+        // Get the parent slug
+        $breadcrumb = $article->breadcrumb();
+        $breadcrumb->pop();
+        $parentSlug = $breadcrumb->last()->slug;
         return view('articles.edit', [
             'article' => $article,
+            'parentSlug' => $parentSlug,
         ]);
     }
 
