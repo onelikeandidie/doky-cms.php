@@ -64,7 +64,7 @@ Route::post('/dark-mode/toggle', function (Request $request) {
 })->name('dark-mode');
 
 Route::middleware(['auth', 'permission:article.create'])
-    ->put('/upload/image', [UploadController::class, 'store'])
+    ->post('/upload/image', [UploadController::class, 'storeImage'])
     ->name('upload.image');
 
 require __DIR__ . '/auth.php';

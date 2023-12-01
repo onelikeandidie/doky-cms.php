@@ -34,7 +34,7 @@ First Basic Version
     - [x] Markdown editor
     - Meta
       - [x] Basic Key-Value pairs
-      - [ ] YAML 
+      - [ ] YAML
 - Frontend
   - Search
     - [ ] Advanced search per word

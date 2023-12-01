@@ -44,7 +44,7 @@ function lazyLoad(image) {
                 image.srcset = tempImage.srcset;
             }
             image.classList.remove(...EXTRA_CLASSES);
-            if (window.settings.app.debug !== true) {
+            if (window.app.debug !== true) {
                 cleanupLazyLoad(image);
             }
             resolve();
@@ -52,7 +52,7 @@ function lazyLoad(image) {
         tempImage.onerror = () => {
             console.error('Failed to load image', image.dataset.src);
             image.classList.remove(...EXTRA_CLASSES);
-            if (window.settings.app.debug !== true) {
+            if (window.app.debug !== true) {
                 cleanupLazyLoad(image);
             }
             reject();
