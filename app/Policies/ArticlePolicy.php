@@ -68,6 +68,10 @@ class ArticlePolicy
      */
     public function update(User $user, Article $article): bool
     {
+        $canViewThisArticle = $this->view($user, $article);
+        if (!$canViewThisArticle) {
+            return false;
+        }
         return $user->hasPermission('article.update') || $user->id === $article->author_id;
     }
 

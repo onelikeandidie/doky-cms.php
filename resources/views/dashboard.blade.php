@@ -31,7 +31,7 @@
                     </form>
                 @endif
             </div>
-            @if(auth()->user()->hasPermission('sync.upload'))
+            @if(auth()->user()->hasPermission('article.update'))
                 <div class="tw-flex tw-flex-col tw-gap-2 tw-items-start">
                     <p class="tw-text-3xl tw-font-bold">
                         {{ __("Images that have been uploaded") }}

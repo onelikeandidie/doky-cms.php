@@ -106,6 +106,14 @@ class ArticleController extends Controller
     public function update(ArticleUpdateFormSubmitRequest $request, Article $article)
     {
         $validated = $request->validated();
+        $slug = $validated['slug'];
+        if ($slug !== $article->slug) {
+            if (Article::where('slug', $slug)->exists()) {
+                return redirect()->back()->withErrors([
+                    'slug' => 'The slug has already been taken.',
+                ]);
+            }
+        }
         $article->slug = $validated['slug'];
         $article->content = $validated['content'];
         $meta = $article->meta();

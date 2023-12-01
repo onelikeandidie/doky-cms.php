@@ -16,7 +16,7 @@ class PanelController extends Controller
     public function index(Request $request, Sync $sync)
     {
         $images = [];
-        if (auth()->check() && auth()->user()->hasPermission('sync.upload')) {
+        if (auth()->check() && auth()->user()->hasPermission('article.update')) {
             $files = File::files($sync->getDriver()->getDirectory() . '/images');
             foreach ($files as $file) {
                 $images[] = asset('/public/storage/sync/' . $sync->getDriver()->getRelativePath() . '/images/' . $file->getFilename());
