@@ -66,9 +66,23 @@ class ArticleController extends Controller
      */
     public function show(Article $article)
     {
-        $this->authorize('view', $article);
-        $markdown = new Markdown($article->content);
-        $content = $markdown->toHtml();
+        // If the user is not logged in, they can only view public articles
+        if (!auth()->check()) {
+            $visibility = $article->meta()->get('visibility')->unwrapOrDefault('private');
+            if ($visibility !== 'public') {
+                abort(403, 'You are not allowed to view this article.');
+            }
+        } else {
+            $this->authorize('view', $article);
+        }
+        // Cache it boys
+        if (cache()->has('article.' . $article->id)) {
+            $content = cache()->get('article.' . $article->id);
+        } else {
+            $markdown = new Markdown($article->content);
+            $content = $markdown->toHtml();
+            cache()->put('article.' . $article->id, $content, 120);
+        }
         return view('articles.show', [
             'article' => $article,
             'content' => $content
@@ -128,6 +142,8 @@ class ArticleController extends Controller
         // Save the article
         $article->meta($meta);
         $article->save();
+        // Clear the cache
+        cache()->forget('article.' . $article->id);
         return redirect()->route('articles.edit', $article);
     }
 

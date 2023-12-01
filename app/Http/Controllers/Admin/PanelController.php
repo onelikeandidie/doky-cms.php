@@ -15,20 +15,15 @@ class PanelController extends Controller
 {
     public function index(Request $request, Sync $sync)
     {
-        // Check if the request was a redirect with a highlight from the upload controller
-        $highlight = null;
-        if ($request->session()->has('highlight')) {
-            $highlight = $request->session()->get('highlight');
-            $request->session()->forget('highlight');
-        }
         $images = [];
-        $files = File::files($sync->getDriver()->getDirectory() . '/images');
-        foreach ($files as $file) {
-            $images[] = asset('/public/storage/sync/' . $sync->getDriver()->getRelativePath() . '/images/' . $file->getFilename());
+        if (auth()->check() && auth()->user()->hasPermission('sync.upload')) {
+            $files = File::files($sync->getDriver()->getDirectory() . '/images');
+            foreach ($files as $file) {
+                $images[] = asset('/public/storage/sync/' . $sync->getDriver()->getRelativePath() . '/images/' . $file->getFilename());
+            }
         }
         return view('dashboard', [
-            'images' => $images,
-            'highlight' => $highlight
+            'images' => $images
         ]);
     }
 

@@ -9,12 +9,19 @@ class TreeSideBar extends Component
 {
     public function render()
     {
-        // Get the articles from the cache
-        $articles = cache()->get('articles');
+        // Get the articles from the cache if the user is not logged in
+        $articles = null;
+        if (!auth()->check()) {
+            $articles = cache()->get('articles');
+        }
         if ($articles === null) {
+            // Get the articles
             $articles = Article::tree();
+            // If the user is not logged in
             // Cache the articles
-            cache()->put('articles', $articles, 120);
+            if (!auth()->check()) {
+                cache()->put('articles', $articles, 120);
+            }
         }
         return view('components.navigation.tree-side-bar', [
             'articles' => $articles,
