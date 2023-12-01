@@ -3,9 +3,13 @@
 namespace App\Libraries\Sync;
 
 use App\Jobs\SyncInit;
+use App\Libraries\Result\Result;
 use App\Libraries\Sync\Drivers\Git;
 use App\Libraries\Sync\Exceptions\MissingDriverException;
+use App\Models\Article;
+use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
 
 class Sync {
     public const DRIVERS = [
@@ -51,5 +55,47 @@ class Sync {
     public function getSyncPath(): string
     {
         return config('sync.path');
+    }
+
+    public function downloadAndSync(): Result {
+        $driver = $this->getDriver();
+        $result = $driver->download();
+        if ($result->isErr()) {
+            return $result;
+        }
+        $filesChanged = $result->unwrap();
+        foreach ($filesChanged as $fileChanged) {
+            $filePath = $this->getSyncPath() . '/' . $fileChanged;
+            // Check if the file is a markdown file
+            if (!Str::endsWith($filePath, '.md')) {
+                Log::debug('Skipping file ' . $filePath . ' because it is not a markdown file.');
+                continue;
+            }
+            // Check if the change is a deletion
+            if (!File::exists($filePath)) {
+                // If the file doesn't exist, delete the article
+                $article = Article::where('slug', basename($filePath, '.md'))->first();
+                $article?->delete();
+                continue;
+            }
+            $fileContents = File::get($filePath);
+            $article = Article::fromString($fileContents);
+            if ($article->isErr()) {
+                return $article;
+            }
+            $article = $article->unwrap();
+            // Find the article in the database with the same slug
+            $existingArticle = Article::where('slug', $article->slug)->first();
+            if ($existingArticle === null) {
+                // If the article doesn't exist, create it
+                $article->save();
+            } else {
+                // If the article exists, update it
+                $existingArticle->content = $article->content;
+                $existingArticle->meta($article->meta());
+                $existingArticle->save();
+            }
+        }
+        return Result::ok();
     }
 }

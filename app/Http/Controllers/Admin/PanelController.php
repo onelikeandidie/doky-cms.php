@@ -29,38 +29,11 @@ class PanelController extends Controller
 
     public function syncDownload(Sync $sync)
     {
-        $driver = $sync->getDriver();
-        $result = $driver->download();
+        $result = $sync->downloadAndSync();
         if ($result->isErr()) {
+            Log::error($result->getErr());
             dump($result);
             return false;
-        }
-        $filesChanged = $result->unwrap();
-        foreach ($filesChanged as $fileChanged) {
-            $filePath = $sync->getSyncPath() . '/' . $fileChanged;
-            // Check if the file is a markdown file
-            if (!Str::endsWith($filePath, '.md')) {
-                Log::debug('Skipping file ' . $filePath . ' because it is not a markdown file.');
-                continue;
-            }
-            $fileContents = File::get($filePath);
-            $article = Article::fromString($fileContents);
-            if ($article->isErr()) {
-                dump($article);
-                return false;
-            }
-            $article = $article->unwrap();
-            // Find the article in the database with the same slug
-            $existingArticle = Article::where('slug', $article->slug)->first();
-            if ($existingArticle === null) {
-                // If the article doesn't exist, create it
-                $article->save();
-            } else {
-                // If the article exists, update it
-                $existingArticle->content = $article->content;
-                $existingArticle->meta($article->meta());
-                $existingArticle->save();
-            }
         }
         return redirect()->route('dashboard');
     }

@@ -41,6 +41,10 @@ class RouteServiceProvider extends ServiceProvider
                 Route::middleware('web')
                     ->group(base_path('routes/web.php'));
 
+                Route::middleware('webhooks')
+                    ->prefix('webhooks')
+                    ->group(base_path('routes/webhooks.php'));
+
                 // Just serve the public directory
                 Route::get('/public/{path}', function ($path) {
                     $real_path = public_path($path);
