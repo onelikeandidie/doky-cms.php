@@ -17,7 +17,7 @@ First Basic Version
     - [x] Pulling changes
     - [x] Pushing changes
     - [ ] Creating detailed commit messages
-    - [ ] Webhook for updates
+    - [x] Webhook for updates
     - [x] Uploading to specific branch
     - [x] Serving from specific directory
 - Backend
