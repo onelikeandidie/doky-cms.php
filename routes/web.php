@@ -60,6 +60,8 @@ Route::post('/dashboard/sync/download', [PanelController::class, 'syncDownload']
     ->middleware(['auth', 'verified'])->name('dashboard.sync.download');
 Route::post('/dashboard/sync/upload', [PanelController::class, 'syncUpload'])
     ->middleware(['auth', 'verified'])->name('dashboard.sync.upload');
+Route::get('/dashboard/sync/init', [PanelController::class, 'syncInit'])
+    ->middleware(['auth', 'verified'])->name('dashboard.sync.init');
 
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');

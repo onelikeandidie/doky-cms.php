@@ -65,7 +65,7 @@ class Git implements ISyncDriver
     public function init(array $options = []): Result
     {
         // Check if the repo is already cloned
-        if (file_exists($this->sync_path)) {
+        if ($this->isInitialized()) {
             return Result::ok();
         }
         // Make sure the sync path exists
@@ -73,6 +73,35 @@ class Git implements ISyncDriver
             $mkdir = File::makeDirectory($this->sync_path, 0755, true);
             if ($mkdir === false) {
                 return Result::err('Failed to create sync path');
+            }
+        }
+        if (Str::startsWith($this->repo, 'https://')) {
+            // Set up the repo to use a specific access token
+            $access_token = config('sync.drivers.git.access_token');
+            if (empty($access_token)) {
+                return Result::err('Missing config value: SYNC_GIT_ACCESS_TOKEN');
+            }
+            // Add the access token to the repo url
+            // https://stackoverflow.com/a/66156992
+            // We expect that $access_token includes the username: or oauth2: prefix
+            $this->repo = str_replace('https://', 'https://' . $access_token . '@', $this->repo);
+        } else {
+            // Set up the repo to use a specific ssh key
+            $ssh_key = config('sync.drivers.git.ssh_key');
+            if (!empty($ssh_key)) {
+                $process = Process::path($this->sync_path)
+                    ->command([
+                        $this->bin,
+                        'config',
+                        'core.sshCommand',
+                        'ssh -i ' . $ssh_key,
+                    ])
+                    ->run();
+                // Check if the process failed
+                if ($process->exitCode() !== 0) {
+                    $err = $process->errorOutput();
+                    return Result::err($err);
+                }
             }
         }
         // Clone the repo
@@ -90,7 +119,7 @@ class Git implements ISyncDriver
                 $this->bin,
                 'config',
                 'user.name',
-                'Doky Sync',
+                config('sync.drivers.git.name', 'Doky Sync'),
             ])
             ->run();
         // Check if the process failed
@@ -103,7 +132,7 @@ class Git implements ISyncDriver
                 $this->bin,
                 'config',
                 'user.email',
-                'doky@example.com',
+                config('sync.drivers.git.email', 'doky@example.com')
             ])
             ->run();
         // Check if the process failed
@@ -112,18 +141,43 @@ class Git implements ISyncDriver
             return Result::err($err);
         }
         // Set up the repo to not gpg sign commits
+        $gpgsign = config('sync.drivers.git.gpgsign', false);
         $process = Process::path($this->sync_path)
             ->command([
                 $this->bin,
                 'config',
                 'commit.gpgsign',
-                'false',
+                $gpgsign ? 'true' : 'false',
             ])
             ->run();
         // Check if the process failed
         if ($process->exitCode() !== 0) {
             $err = $process->errorOutput();
             return Result::err($err);
+        }
+        // Set up the repo to use a specific gpg key
+        if ($gpgsign) {
+            $gpgsign_key = config('sync.drivers.git.gpgsign_key');
+            $process = Process::path($this->sync_path)
+                ->command([
+                    $this->bin,
+                    'config',
+                    'user.signingkey',
+                    $gpgsign_key,
+                ])
+                ->run();
+            // Check if the process failed
+            if ($process->exitCode() !== 0) {
+                $err = $process->errorOutput();
+                return Result::err($err);
+            }
+        }
+        // Make sure the sub directory exists
+        if ($this->path !== '*' && !file_exists($this->sync_path . '/' . $this->path)) {
+            $mkdir = File::makeDirectory($this->sync_path . '/' . $this->path, 0755, true);
+            if ($mkdir === false) {
+                return Result::err('Failed to create sync path');
+            }
         }
         // Pull the repo
         return $this->download();

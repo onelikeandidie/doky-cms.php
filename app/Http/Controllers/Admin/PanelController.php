@@ -17,14 +17,27 @@ class PanelController extends Controller
     {
         $images = [];
         if (auth()->check() && auth()->user()->hasPermission('article.update')) {
-            $files = File::files($sync->getDriver()->getDirectory() . '/images');
-            foreach ($files as $file) {
-                $images[] = asset('/public/storage/sync/' . $sync->getDriver()->getRelativePath() . '/images/' . $file->getFilename());
+            $imageDir = $sync->getDriver()->getDirectory() . '/images';
+            if (File::exists($imageDir)) {
+                $files = File::files($imageDir);
+                foreach ($files as $file) {
+                    $images[] = asset('/public/storage/sync/' . $sync->getDriver()->getRelativePath() . '/images/' . $file->getFilename());
+                }
             }
         }
         return view('dashboard', [
             'images' => $images
         ]);
+    }
+
+    public function syncInit(): bool
+    {
+        $result = Sync::getInstance(false)->getDriver()->init();
+        if ($result->isErr()) {
+            Log::error($result->getErr());
+        }
+        dump($result);
+        return $result->isOk();
     }
 
     public function syncDownload(Sync $sync)
@@ -57,6 +70,9 @@ class PanelController extends Controller
     public function serialize(Article $article, $dir)
     {
         $slug = $article->slug;
+        if (Str::contains($slug, '/')) {
+            $slug = Str::afterLast($slug, '/');
+        }
         $filename = $dir . '/' . $slug . '.md';
         $markdown = $article->toString();
         $result = File::put($filename, $markdown);
