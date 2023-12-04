@@ -22,6 +22,10 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        //
+        // Workaround to work is outdated mysql database
+        // https://stackoverflow.com/a/65628140
+        if (config('database.default') === 'mysql') {
+            \Illuminate\Support\Facades\Schema::defaultStringLength(191);
+        }
     }
 }

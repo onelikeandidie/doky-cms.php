@@ -112,4 +112,6 @@ return [
 
     'password_timeout' => 10800,
 
+    // Check if guests can register
+    'allow_guest_registration' => env('AUTH_ALLOW_GUEST_REGISTRATION', false),
 ];
