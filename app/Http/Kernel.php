@@ -43,6 +43,8 @@ class Kernel extends HttpKernel
             \Illuminate\Routing\Middleware\ThrottleRequests::class.':api',
             \Illuminate\Routing\Middleware\SubstituteBindings::class,
         ],
+
+        'webhooks' => [],
     ];
 
     /**
@@ -64,5 +66,8 @@ class Kernel extends HttpKernel
         'signed' => \App\Http\Middleware\ValidateSignature::class,
         'throttle' => \Illuminate\Routing\Middleware\ThrottleRequests::class,
         'verified' => \Illuminate\Auth\Middleware\EnsureEmailIsVerified::class,
+        // Custom middleware
+        'role' => \App\Http\Middleware\EnsureUserHasRole::class,
+        'permission' => \App\Http\Middleware\EnsureUserHasPermission::class,
     ];
 }
