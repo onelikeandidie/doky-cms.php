@@ -1,7 +1,8 @@
 {
-    "name": "laravel/laravel",
+    "name": "onelikeandidie/doky-cms",
+    "version": "0.1.0",
     "type": "project",
-    "description": "The skeleton application for the Laravel framework.",
+    "description": "A documentation CMS that syncs with your git repository.",
     "keywords": ["laravel", "framework"],
     "license": "MIT",
     "require": {

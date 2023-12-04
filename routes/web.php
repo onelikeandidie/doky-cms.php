@@ -63,12 +63,6 @@ Route::post('/dashboard/sync/upload', [PanelController::class, 'syncUpload'])
 Route::get('/dashboard/sync/init', [PanelController::class, 'syncInit'])
     ->middleware(['auth', 'verified'])->name('dashboard.sync.init');
 
-Route::middleware('auth')->group(function () {
-    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
-    Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
-    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
-});
-
 Route::post('/dark-mode/toggle', function (Request $request) {
     session()->put('dark_mode', $request->input('dark_mode'));
     dump($request->input('dark_mode'));
