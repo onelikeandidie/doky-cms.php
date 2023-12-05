@@ -1,6 +1,6 @@
 {
     "name": "onelikeandidie/doky-cms",
-    "version": "0.1.0",
+    "version": "0.1.1",
     "type": "project",
     "description": "A documentation CMS that syncs with your git repository.",
     "keywords": ["laravel", "framework"],

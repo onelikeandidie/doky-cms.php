@@ -102,9 +102,12 @@ class ArticleController extends Controller
     {
         $this->authorize('update', $article);
         // Get the parent slug
-        $breadcrumb = $article->breadcrumb();
-        $breadcrumb->pop();
-        $parentSlug = $breadcrumb->last()->slug;
+        $parentSlug = null;
+        if ($article->parent) {
+            $breadcrumb = $article->breadcrumb();
+            $breadcrumb->pop();
+            $parentSlug = $breadcrumb->last()->slug;
+        }
         return view('articles.edit', [
             'article' => $article,
             'parentSlug' => $parentSlug,
