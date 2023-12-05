@@ -55,12 +55,13 @@ class ArticleController extends Controller
         // Fun piece of code!
         $post = Article::create([
             'slug' => $request->input('slug'),
-            'content' => '',
+            'content' => '# ' . $request->input('title') . "\n\n",
             'metadata' => (new Meta([
                 'title' => $request->input('title'),
                 'authors' => [
                     $request->user()->name,
                 ],
+                'visibility' => $request->input('visibility', 'private'),
             ]))->toArray(),
             'parent_id' => $parent_id,
         ]);
@@ -165,7 +166,8 @@ class ArticleController extends Controller
         $article->meta($meta);
         $article->save();
         // Clear the cache
-        cache()->forget('article.' . $article->id);
+        cache()->forget('article.' . $article->id); // Clears the html
+        cache()->forget('articles'); // Clears the navigation tree
         return redirect()->route('articles.edit', $article);
     }
 
