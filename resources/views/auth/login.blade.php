@@ -5,14 +5,14 @@
     </div>
     <div class="tw-flex tw-items-center tw-justify-center tw-min-h-screen">
         <form method="POST" action="{{ route('login') }}"
-              class="tw-p-4 tw-rounded tw-shadow tw-bg-white tw-w-64">
+              class="tw-p-4 tw-rounded tw-shadow tw-bg-white dark:tw-bg-gray-800 tw-w-64">
             @csrf
 
             <!-- Email Address -->
             <div>
                 <label for="email"
                        class="tw-block tw-text-sm tw-font-medium tw-text-gray-700 dark:tw-text-gray-400">{{ __('Email') }}</label>
-                <input id="email" class="tw-py-1 tw-px-2 tw-border tw-rounded" type="email" name="email"
+                <input id="email" class="tw-py-1 tw-px-2 tw-border tw-rounded dark:tw-bg-gray-800" type="email" name="email"
                        :value="old('email')" required autofocus autocomplete="username"/>
                 @error('email')
                 <span class="tw-text-red-600 tw-text-lg">
@@ -25,7 +25,7 @@
             <div class="tw-mt-4">
                 <label for="password"
                        class="tw-block tw-text-sm tw-font-medium tw-text-gray-700 dark:tw-text-gray-400">{{ __('Password') }}</label>
-                <input id="password" class="tw-py-1 tw-px-2 tw-border tw-rounded" type="password" name="password"
+                <input id="password" class="tw-py-1 tw-px-2 tw-border tw-rounded dark:tw-bg-gray-800" type="password" name="password"
                        required autocomplete="current-password"/>
                 @error('password')
                 <span class="tw-text-red-600 tw-text-lg">
@@ -54,7 +54,7 @@
                 @endif
 
                 <button
-                    class="tw-px-2 tw-py-1 tw-rounded tw-border tw-border-gray-300 tw-bg-white tw-text-gray-700 hover:tw-bg-gray-50">
+                    class="tw-px-2 tw-py-1 tw-rounded tw-border tw-border-gray-300 tw-bg-white dark:tw-bg-gray-800 hover:tw-bg-gray-50">
                     {{ __('Log in') }}
                 </button>
             </div>

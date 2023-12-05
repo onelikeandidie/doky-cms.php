@@ -66,7 +66,7 @@
                         {{-- Button to generate slug from title --}}
                         <button type="button"
                                 class="tw-px-2 tw-py-1 tw-rounded tw-rounded-l-none tw-border tw-border-gray-300 tw-bg-white tw-text-gray-700 hover:tw-bg-gray-50 js-only"
-                                x-on:click="slug = parentSlug + '/' +  title.toLowerCase().replace(/[^a-z0-9-//]/g, '-')">
+                                x-on:click="slug = ''; if(parentSlug) slug += parentSlug + '/'; slug += title.toLowerCase().replace(/[^a-z0-9-//]/g, '-')">
                             <x-icons.heroicon.solid.bolt class="tw-w-5 tw-h-5 tw-inline-block"/>
                             {{ __("Generate") }}
                         </button>
