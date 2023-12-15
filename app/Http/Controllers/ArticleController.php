@@ -168,7 +168,7 @@ class ArticleController extends Controller
         // Clear the cache
         cache()->forget('article.' . $article->id); // Clears the html
         cache()->forget('articles'); // Clears the navigation tree
-        return redirect()->route('articles.edit', $article);
+        return redirect()->route('articles.edit', $article)->with('success', __('Article updated successfully.'));
     }
 
     /**
