@@ -1,4 +1,4 @@
-<x-app-layout>
+<x-app-layout :showTreeSideBarToggle="true">
     <div class="tw-flex tw-items-stretch tw-h-[calc(100vh-3rem)]">
         <x-navigation.tree-side-bar/>
         <div class="tw-flex-1 tw-p-4 tw-overflow-auto tw-relative">

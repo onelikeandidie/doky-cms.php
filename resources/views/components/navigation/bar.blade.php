@@ -1,6 +1,17 @@
+@props([
+    'showTreeSideBarToggle' => false
+])
 <nav class="tw-h-12 tw-bg-neutral-100 tw-border-b-2 tw-border-neutral-200 dark:tw-bg-gray-800 dark:tw-border-gray-600">
     <div class="tw-h-12 tw-container tw-m-auto tw-flex tw-items-stretch">
         <div class="tw-flex tw-flex-1 tw-items-center tw-justify-start">
+            {{-- Toggle for side bar --}}
+            @if($showTreeSideBarToggle ?? true)
+                <div class="sm:tw-hidden tw-block tw-p-2" role="button"
+                     title="{{ __('Toggle Navigation') }}"
+                     x-on:click="$dispatch('toggle-side-bar')">
+                    <x-icons.heroicon.solid.bars-3 class="tw-inline-block tw-h-6 tw-w-6"/>
+                </div>
+            @endif
             <a href="{{ route('articles.index') }}"
                class="tw-flex tw-items-center tw-justify-center hover:tw-underline">
                 <span class="tw-ml-2">
@@ -10,7 +21,7 @@
                 </span>
             </a>
         </div>
-        <div class="tw-flex tw-items-center tw-justify-end tw-gap-2">
+        <div class="tw-flex tw-items-center tw-justify-end tw-gap-2 tw-pr-2">
             {{-- Toggle for dark mode --}}
             <div class="tw-bg-gray-300 tw-rounded-full tw-flex tw-items-center tw-justify-center tw-w-8 tw-h-8 tw-cursor-pointer"
                  @click="darkMode = !darkMode; document.documentElement.classList.toggle('tw-dark'); axios.post('/dark-mode/toggle', { dark_mode: darkMode });"
