@@ -41,7 +41,7 @@ First Basic Version
     - [ ] Priority sorting with doc meta
   - Keybinds
     - [ ] Open search overlay
-  - [ ] Mobile support
+  - [x] Mobile support
 - API
   - Documentation
     - [ ] Markdown
