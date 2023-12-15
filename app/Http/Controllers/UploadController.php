@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Libraries\Sync\Sync;
 use Illuminate\Http\Request;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\File;
+use Illuminate\Support\Str;
 
 class UploadController extends Controller
 {
@@ -21,12 +23,18 @@ class UploadController extends Controller
                 $file = $validated['image'];
                 // Store it inside the sync directory
                 $sync = Sync::getInstance();
-                $image_sub_dir = '/images/' . $file->getClientOriginalName();
+                $fileName = $file->getClientOriginalName();
+                // There is a slight issue. The Markdown parser fucks up if the
+                // name has a bunch of spaces or dots before the extension.
+                $fileExtension = File::extension($fileName);
+                $fileBase = Str::replace('.' . $fileExtension, '', $fileName);
+                $fileName = Str::replace(['.', ' '], ['_', '-'], $fileBase) . '.' . $fileExtension;
+                $image_sub_dir = '/images/' . $fileName;
                 $path = $sync->getDriver()->getDirectory() . $image_sub_dir;
                 if (file_exists($path)) {
                     return response()->json(['error' => 'File with the same name already exists.']);
                 }
-                $fileStore = $file->move($sync->getDriver()->getDirectory() . '/images', $file->getClientOriginalName());
+                $fileStore = $file->move($sync->getDriver()->getDirectory() . '/images', $fileName);
                 $relPath = $sync->getDriver()->getRelativePath() . $image_sub_dir;
                 $assetPath = '/public/storage/sync/' . $relPath;
                 return response()->json([

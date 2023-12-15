@@ -83,13 +83,13 @@ class ArticleController extends Controller
             $this->authorize('view', $article);
         }
         // Cache it boys
-        if (cache()->has('article.' . $article->id)) {
-            $content = cache()->get('article.' . $article->id);
-        } else {
+        // if (cache()->has('article.' . $article->id)) {
+        //     $content = cache()->get('article.' . $article->id);
+        // } else {
             $markdown = new Markdown($article->content);
             $content = $markdown->toHtml();
             cache()->put('article.' . $article->id, $content, 120);
-        }
+        // }
         return view('articles.show', [
             'article' => $article,
             'content' => $content
