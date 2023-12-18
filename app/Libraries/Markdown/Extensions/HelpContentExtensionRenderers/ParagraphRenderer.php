@@ -18,7 +18,7 @@ class ParagraphRenderer implements NodeRendererInterface
         }
 
         $tag = 'p';
-        $classes = ['tw-break-words', 'tw-mb-4'];
+        $classes = ['tw-break-words', 'tw-my-4'];
 
         // If the paragraph is inside a list item, make it inline
         $parent = $node->parent();

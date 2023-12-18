@@ -32,7 +32,7 @@ class EmbededRenderer implements NodeRendererInterface
         }
         $bigger_container_attrs = $node->data->get('bigger_container_attributes', []);
         // The embedded shouldn't be the width of the page
-        $bigger_container_attrs['class'] = 'tw-w-full md:tw-w-4/5 xl:tw-w-3/5 tw-mx-auto';
+        $bigger_container_attrs['class'] = 'tw-w-full md:tw-w-4/5 xl:tw-w-3/5 tw-mx-auto tw-mb-4';
         $container_attrs = $node->data->get('container_attributes', []);
         $container_attrs['class'] = 'tw-aspect-w-16 tw-aspect-h-9';
         return new HtmlElement('div', $bigger_container_attrs, [
