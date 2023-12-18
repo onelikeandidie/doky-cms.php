@@ -11,6 +11,14 @@
                     </div>
                 </div>
             @endif
+            @error('article')
+            <div class="tw-relative">
+                <div class="tw-p-2 tw-text-sm tw-rounded tw-border-2 tw-border-red-600 tw-text-red-600">
+                    <x-icons.heroicon.solid.x-mark class="tw-w-5 tw-h-5 tw-inline-block"/>
+                    {{ $message }}
+                </div>
+            </div>
+            @enderror
             @php
                 $visibility = $article->meta()->get('visibility')->unwrapOrDefault('private');
             @endphp
@@ -314,10 +322,44 @@
                 <textarea id="editor" name="content"
                           class="">{{ old('content') ?? $article->content }}</textarea>
                 <hr/>
-                <button type="submit"
-                        class="tw-px-2 tw-py-1 tw-rounded tw-border tw-border-gray-300 tw-bg-white tw-text-gray-700 hover:tw-bg-gray-50">
-                    {{ __("Save Article") }}
-                </button>
+                <div class="tw-flex tw-gap-2">
+                    <button type="submit"
+                            class="tw-px-2 tw-py-1 tw-rounded tw-border tw-border-gray-300 tw-bg-white tw-text-gray-700 hover:tw-bg-gray-50">
+                        {{ __("Save Article") }}
+                    </button>
+                    {{-- Button to open delete dialog --}}
+                    <button x-on:click="$event.preventDefault(); $refs.deleteDialog.classList.remove('tw-hidden')"
+                            class="tw-px-2 tw-py-1 tw-rounded tw-border tw-border-gray-300 tw-bg-red-600 tw-text-gray-200">
+                        <x-icons.heroicon.solid.trash class="tw-w-5 tw-h-5 tw-inline-block"/>
+                        {{ __("Delete Article") }}
+                    </button>
+                </div>
+            </form>
+            <form class="tw-hidden tw-fixed tw-top-0 tw-left-0 tw-w-full tw-z-10 tw-h-full tw-bg-gray-900 tw-bg-opacity-50 tw-flex tw-items-center tw-justify-center"
+                  x-ref="deleteDialog"
+                  x-on:click.self="$refs.deleteDialog.classList.add('tw-hidden')"
+                  action="{{ route('articles.destroy', $article) }}" method="POST">
+                @csrf
+                @method('DELETE')
+                <div class="tw-bg-gray-100 dark:tw-bg-gray-800 tw-p-4 tw-rounded">
+                    <p class="tw-text-lg tw-mb-4">
+                        {{ __("Are you sure you want to delete this article?") }}
+                    </p>
+                    <div class="tw-flex tw-gap-2 tw-justify-end">
+                        <button type="button"
+                                tabindex="-1"
+                                class="tw-px-2 tw-py-1 tw-rounded tw-border tw-border-gray-300 tw-bg-white tw-text-gray-700 hover:tw-bg-gray-50"
+                                x-ref="cancelButton"
+                                x-on:click="$refs.deleteDialog.classList.add('tw-hidden')">
+                            {{ __("Cancel") }}
+                        </button>
+                        <button type="submit"
+                                class="tw-px-2 tw-py-1 tw-rounded tw-border tw-border-gray-300 tw-bg-red-600 tw-text-gray-200">
+                            <x-icons.heroicon.solid.trash class="tw-w-5 tw-h-5 tw-inline-block"/>
+                            {{ __("Delete Article") }}
+                        </button>
+                    </div>
+                </div>
             </form>
         </div>
     </div>
