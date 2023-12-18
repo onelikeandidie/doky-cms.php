@@ -24,6 +24,7 @@ class Role extends Model
         'article.create',
         'article.update',
         'article.delete',
+        'article.delete.any',
         // Permissions for using the Sync feature
         'sync.download',
         'sync.upload',

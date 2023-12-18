@@ -174,8 +174,16 @@ class ArticleController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(Article $post)
+    public function destroy(Article $article)
     {
-        //
+        $this->authorize('delete', $article);
+        $result = $article->delete();
+        if (!$result) {
+            return redirect()->back()->withErrors([
+                'article' => 'Failed to delete article.',
+            ]);
+        }
+        cache()->forget('articles'); // Clears the navigation tree
+        return redirect()->route('articles.index')->with('success', __('Article deleted successfully.'));
     }
 }

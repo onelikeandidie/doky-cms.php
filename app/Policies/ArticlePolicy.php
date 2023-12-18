@@ -80,7 +80,17 @@ class ArticlePolicy
      */
     public function delete(User $user, Article $post): bool
     {
-        //
+        // Check if the user is the author
+        if ($user->id === $post->author_id) {
+            return true;
+        }
+        // Check if the user has the permission
+        $canDelete = $user->hasPermission('article.delete');
+        if ($canDelete) {
+            return true;
+        }
+        // Check if the user has the permission to delete any article
+        return $user->hasPermission('article.delete.any');
     }
 
     /**
@@ -88,7 +98,7 @@ class ArticlePolicy
      */
     public function restore(User $user, Article $post): bool
     {
-        //
+        return $this->delete($user, $post);
     }
 
     /**
