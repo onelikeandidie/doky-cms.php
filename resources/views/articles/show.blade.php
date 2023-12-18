@@ -1,4 +1,4 @@
-<x-app-layout :scripts="['resources/js/pages/articles/show.js']">
+<x-app-layout :scripts="['resources/js/pages/articles/show.js']" :showTreeSideBarToggle="true">
     <div class="tw-flex tw-items-stretch tw-h-[calc(100vh-3rem)]">
         <x-navigation.tree-side-bar/>
         <div class="tw-flex-1 tw-p-4 tw-overflow-auto tw-relative">

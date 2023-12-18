@@ -1,7 +1,16 @@
-<x-app-layout :scripts="['resources/js/pages/articles/edit.js']">
+<x-app-layout :showTreeSideBarToggle="true" :scripts="['resources/js/pages/articles/edit.js']">
     <div class="tw-flex tw-items-stretch tw-h-[calc(100vh-3rem)]">
         <x-navigation.tree-side-bar/>
         <div class="tw-flex-1 tw-p-4 tw-overflow-auto tw-relative">
+            {{-- success message --}}
+            @if(session()->has('success'))
+                <div class="tw-relative">
+                    <div class="tw-p-2 tw-text-sm tw-rounded tw-border-2">
+                        <x-icons.heroicon.solid.check-circle class="tw-w-5 tw-h-5 tw-inline-block"/>
+                        {{ session()->get('success') }}
+                    </div>
+                </div>
+            @endif
             @php
                 $visibility = $article->meta()->get('visibility')->unwrapOrDefault('private');
             @endphp
@@ -65,10 +74,13 @@
                                value="{{ $article->slug }}"/>
                         {{-- Button to generate slug from title --}}
                         <button type="button"
+                                title="{{ __('Generate SEO Slug') }}"
                                 class="tw-px-2 tw-py-1 tw-rounded tw-rounded-l-none tw-border tw-border-gray-300 tw-bg-white tw-text-gray-700 hover:tw-bg-gray-50 js-only"
                                 x-on:click="slug = ''; if(parentSlug) slug += parentSlug + '/'; slug += title.toLowerCase().replace(/[^a-z0-9-//]/g, '-')">
                             <x-icons.heroicon.solid.bolt class="tw-w-5 tw-h-5 tw-inline-block"/>
-                            {{ __("Generate") }}
+                            <span class="tw-hidden sm:tw-inline-block">
+                                {{ __("Generate") }}
+                            </span>
                         </button>
                     </div>
                     {{-- Visibility --}}

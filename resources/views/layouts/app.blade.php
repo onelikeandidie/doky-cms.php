@@ -1,5 +1,6 @@
 @props([
     'showNavigation' => true,
+    'showTreeSideBarToggle' => false,
     'scripts' => [],
     'styles' => [],
 ])
@@ -49,7 +50,7 @@
       x-data="{ darkMode: {{ $darkMode ? 'true' : 'false' }} }"
 >
 @if($showNavigation ?? true)
-    <x-navigation.bar/>
+    <x-navigation.bar :showTreeSideBarToggle="$showTreeSideBarToggle"/>
 @endif
 {{ $slot }}
 </body>
