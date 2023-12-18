@@ -31,16 +31,13 @@ class EmbededRenderer implements NodeRendererInterface
             $result = $this->renderImage($node, $childRenderer);
         }
         $bigger_container_attrs = $node->data->get('bigger_container_attributes', []);
+        // The embedded shouldn't be the width of the page
+        $bigger_container_attrs['class'] = 'tw-w-full md:tw-w-4/5 xl:tw-w-3/5 tw-mx-auto';
         $container_attrs = $node->data->get('container_attributes', []);
         $container_attrs['class'] = 'tw-aspect-w-16 tw-aspect-h-9';
-        $caption_container_attr = $node->data->get('caption_container_attributes', []);
-        $caption_container_attr['class'] = 'tw-text-center tw-m-2';
         return new HtmlElement('div', $bigger_container_attrs, [
             new HtmlElement('div', $container_attrs,
                 $result
-            ),
-            new HtmlElement('div', $caption_container_attr,
-                $childRenderer->renderNodes($node->children())
             )
         ]);
     }

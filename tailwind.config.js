@@ -108,10 +108,16 @@ export default {
         'tw-pl-10',
         // Include some padding tops for the file trees
         'tw-mt-2',
+        'tw-mb-4',
         'tw-pb-2',
         // Aspect ratio
         'tw-aspect-w-16',
-        'tw-aspect-h-9'
+        'tw-aspect-h-9',
+        //
+        'md:tw-w-4/5',
+        'lg:tw-w-3/5',
+        'xl:tw-w-2/5',
+        'tw-mx-auto',
     ],
     plugins: [
         // Plugin for aspect ratio

@@ -22,7 +22,7 @@ class ListBlockRenderer implements NodeRendererInterface
             throw new \InvalidArgumentException('Incompatible node type: ' . \get_class($node));
         }
         // Check if the list is ordered
-        $classes = ['tw-break-words', 'tw-pl-4', 'tw-m-0', 'tw-list-outside'];
+        $classes = ['tw-break-words', 'tw-pl-4', 'tw-m-0', 'tw-list-outside', 'tw-text-base'];
         if ($node->getListData()->type === ListBlock::TYPE_ORDERED) {
             $classes[] = 'tw-list-decimal';
             return new HtmlElement(
