@@ -109,6 +109,7 @@ export default {
         // Include some padding tops for the file trees
         'tw-mt-2',
         'tw-mb-4',
+        'tw-my-4',
         'tw-pb-2',
         // Aspect ratio
         'tw-aspect-w-16',
