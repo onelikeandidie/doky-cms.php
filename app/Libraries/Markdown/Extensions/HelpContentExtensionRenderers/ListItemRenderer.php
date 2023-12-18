@@ -11,7 +11,7 @@ class ListItemRenderer implements NodeRendererInterface
 {
     public function render(Node $node, ChildNodeRendererInterface $childRenderer)
     {
-        $classes = ['tw-break-words', 'tw-text-sm'];
+        $classes = ['tw-break-words'];
         return new HtmlElement(
             'li',
             ['class' => implode(' ', $classes)],

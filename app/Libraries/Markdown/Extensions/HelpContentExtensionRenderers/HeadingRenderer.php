@@ -3,6 +3,7 @@
 namespace App\Libraries\Markdown\Extensions\HelpContentExtensionRenderers;
 
 use Illuminate\Support\Str;
+use Illuminate\View\ComponentAttributeBag;
 use League\CommonMark\Extension\CommonMark\Node\Block\Heading;
 use League\CommonMark\Node\Inline\Text;
 use League\CommonMark\Node\Node;
@@ -25,7 +26,7 @@ class HeadingRenderer implements NodeRendererInterface
         $heading_level = $node->getLevel();
         $classes = ["tw-font-semibold", "tw-mb-4", 'tw-mt-2'];
         $class = 'tw-text-';
-        $tag = 'p';
+        $tag = 'h1';
         switch ($heading_level) {
             case 1:
                 $class .= '4xl';
@@ -69,13 +70,23 @@ class HeadingRenderer implements NodeRendererInterface
             if ($child instanceof Text) {
                 $txt = $child->getLiteral();
                 $slug = Str::slug($txt);
+                $linkIcon = view(
+                    'components.icons.heroicon.solid.link', [
+                        'attributes' => new ComponentAttributeBag([
+                            'class' => 'heading-link tw-inline-block tw-w-5 tw-h-5 tw-ml-2',
+                            'role' => 'button',
+                            'aria-label' => __('Copy absolute link to heading'),
+                            'data-url' => '#' . $slug,
+                        ])
+                    ]
+                )->render();
                 $a = new HtmlElement(
                     'a',
                     [
                         'href' => '#' . $slug,
                         'class' => ''
                     ],
-                    $childRenderer->renderNodes($node->children())
+                    $childRenderer->renderNodes($node->children()) . $linkIcon
                 );
                 return new HtmlElement(
                     $tag,

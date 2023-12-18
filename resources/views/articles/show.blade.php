@@ -1,4 +1,4 @@
-<x-app-layout :showTreeSideBarToggle="true">
+<x-app-layout :scripts="['resources/js/pages/articles/show.js']" :showTreeSideBarToggle="true">
     <div class="tw-flex tw-items-stretch tw-h-[calc(100vh-3rem)]">
         <x-navigation.tree-side-bar/>
         <div class="tw-flex-1 tw-p-4 tw-overflow-auto tw-relative">
@@ -12,20 +12,24 @@
                     </a>
                 @endcan
             </div>
-            {{-- breadcrumbs --}}
-            <div class="tw-flex tw-items-center tw-gap-2 tw-relative">
-                @foreach($article->breadcrumb() as $breadcrumb)
-                    <a href="{{ route('articles.show', $breadcrumb) }}"
-                       class="tw-text-neutral-600 dark:tw-text-neutral-200 hover:tw-text-neutral-800 dark:hover:tw-text-white">
-                        {{ $breadcrumb->meta()->get('title')->unwrap() }}
-                        {{-- Add a slash after each breadcrumb except the last one --}}
-                    </a>
-                    @if(!$loop->last)
-                        <span class="tw-text-neutral-400 dark:tw-text-neutral-600">/</span>
-                    @endif
-                @endforeach
+            <div class="tw-w-full lg:tw-w-3/4 tw-mx-auto">
+                {{-- breadcrumbs --}}
+                <div class="tw-flex tw-items-center tw-gap-2 tw-relative">
+                    @foreach($article->breadcrumb() as $breadcrumb)
+                        <a href="{{ route('articles.show', $breadcrumb) }}"
+                           class="tw-text-neutral-600 dark:tw-text-neutral-200 hover:tw-text-neutral-800 dark:hover:tw-text-white hover:tw-underline">
+                            {{ $breadcrumb->meta()->get('title')->unwrap() }}
+                            {{-- Add a slash after each breadcrumb except the last one --}}
+                        </a>
+                        @if(!$loop->last)
+                            <span class="tw-w-1 tw-h-1 tw-rounded-full tw-bg-neutral-400"></span>
+                        @endif
+                    @endforeach
+                </div>
+                <article>
+                    {!! $content !!}
+                </article>
             </div>
-            {!! $content !!}
         </div>
     </div>
 </x-app-layout>
