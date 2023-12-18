@@ -29,6 +29,11 @@ class ArticlePolicy
         if ($isAuthor) {
             return true;
         }
+        // The user with the permission to view any article can view the article
+        $canViewAny = $user->hasPermission('article.view.any');
+        if ($canViewAny) {
+            return true;
+        }
         $visibility = $article->meta()->get('visibility')->unwrapOrDefault('private');
         if ($visibility === null) {
             return false;

@@ -21,6 +21,7 @@ class Role extends Model
 
     public const PERMISSIONS = [
         // Permissions for managing articles
+        'article.view.any',
         'article.create',
         'article.update',
         'article.delete',
