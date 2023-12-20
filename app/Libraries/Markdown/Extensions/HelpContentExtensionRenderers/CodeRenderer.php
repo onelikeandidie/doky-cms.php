@@ -22,8 +22,10 @@ class CodeRenderer implements NodeRendererInterface
         $classes = [
             'code-block',
             'tw-inline',
-            'tw-bg-neutral-100',
-            'tw-text-neutral-900',
+            'tw-bg-neutral-200',
+            'dark:tw-bg-neutral-800',
+            'tw-text-neutral-800',
+            'dark:tw-text-neutral-200',
             'tw-px-2',
             'tw-py-1',
             'tw-rounded-md',
