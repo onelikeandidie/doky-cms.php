@@ -8,6 +8,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Str;
 
 class RouteServiceProvider extends ServiceProvider
 {
@@ -52,8 +53,20 @@ class RouteServiceProvider extends ServiceProvider
                         abort(404);
                     }
                     $type = File::mimeType($real_path);
-                    if (str_ends_with($path, '.js')) {
+                    if (Str::endsWith($path, '.js')) {
                         $type = 'text/javascript';
+                    }
+                    if (Str::endsWith($path, '.css')) {
+                        $type = 'text/css';
+                    }
+                    if (Str::endsWith($path, '.png')) {
+                        $type = 'image/png';
+                    }
+                    if (Str::endsWith($path, '.jpg')) {
+                        $type = 'image/jpeg';
+                    }
+                    if (Str::endsWith($path, '.svg')) {
+                        $type = 'image/svg+xml';
                     }
                     $size = File::size($real_path);
                     return response()->file($real_path, [
