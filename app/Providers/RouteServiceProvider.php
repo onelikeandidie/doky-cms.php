@@ -53,6 +53,7 @@ class RouteServiceProvider extends ServiceProvider
                         abort(404);
                     }
                     $type = File::mimeType($real_path);
+                    $isImage = false;
                     if (Str::endsWith($path, '.js')) {
                         $type = 'text/javascript';
                     }
@@ -61,18 +62,24 @@ class RouteServiceProvider extends ServiceProvider
                     }
                     if (Str::endsWith($path, '.png')) {
                         $type = 'image/png';
+                        $isImage = true;
                     }
                     if (Str::endsWith($path, '.jpg')) {
                         $type = 'image/jpeg';
+                        $isImage = true;
                     }
                     if (Str::endsWith($path, '.svg')) {
                         $type = 'image/svg+xml';
                     }
                     $size = File::size($real_path);
-                    return response()->file($real_path, [
+                    $headers = [
                         'Content-Type' => $type,
                         'Content-Length' => $size,
-                    ]);
+                    ];
+                    if (config('cache.image.expire') && $isImage) {
+                        $headers['Cache-Control'] = 'max-age=' . config('cache.image.expire');
+                    }
+                    return response()->file($real_path, $headers);
                 })->where('path', '.*');
             });
         });
